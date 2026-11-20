@@ -57,6 +57,9 @@ h2{margin:0 0 6px;font-size:28px}
 .m-timed{background:linear-gradient(135deg,#ff7a45,#ff4d4f)}
 .m-endless{background:linear-gradient(135deg,#36cfc9,#1890ff)}
 .m-pop{background:linear-gradient(135deg,#9254de,#c41d7f)}
+.m-sodom{background:linear-gradient(135deg,#d4a017,#8b4513)}
+.dis.alert{animation:holy .5s infinite alternate;border-color:#fffbe6}
+@keyframes holy{from{background:#33456b;box-shadow:0 0 0 0 rgba(255,251,230,.0)}to{background:#8a7a3a;box-shadow:0 0 18px 4px rgba(255,251,230,.9)}}
 .how{margin-top:16px;text-align:left;font-size:13px;color:var(--muted);background:#f5f7fb;border-radius:14px;padding:10px 14px;line-height:1.7}
 .how b{color:var(--ink)}
 .big{font-size:52px;font-weight:900;color:var(--accent);margin:4px 0}
@@ -104,6 +107,7 @@ h2{margin:0 0 6px;font-size:28px}
       <button class="mode m-timed" data-mode="timed"><span class="em">⏱️</span><div><b>限時 60 秒</b><span>時間內拿到最高分</span></div><div class="best" data-best="timed"></div></button>
       <button class="mode m-endless" data-mode="endless"><span class="em">♾️</span><div><b>無限模式</b><span>沒有時間限制，玩到開心為止</span></div><div class="best" data-best="endless"></div></button>
       <button class="mode m-pop" data-mode="pop"><span class="em">🏙️</span><div><b>人口爆炸</b><span>人越來越多，城市擠爆就輸了</span></div><div class="best" data-best="pop"></div></button>
+      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>索多瑪模式</b><span>限時 90 秒・降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
     </div>
     <div class="how">
       <b>玩法：</b>① 從畫面下方選一種天災 ② 點擊城市降下天災<br>
@@ -112,6 +116,7 @@ h2{margin:0 0 6px;font-size:28px}
       ☄️ <b>隕石</b>：延遲落下、超大範圍<br>
       🌪️ <b>龍捲風</b>：會自己移動，把沿路的東西捲走<br>
       👻 <b>惡靈附身</b>：點一個人讓他發狂追殺別人，殺滿 5 人就自爆！<br>
+      📜 <b>索多瑪模式</b>：用鹽柱、天火、忌邪之眼毀滅罪惡之城；發著白光的<b>義人</b>出現時，要切換「天使救援」點他接走（+300），太晚或誤傷義人 -300！<br>
       <span style="opacity:.8">電腦可用數字鍵 1～4 快速切換天災</span>
     </div>
   </div>
@@ -139,6 +144,7 @@ h2{margin:0 0 6px;font-size:28px}
       <div>摧毀車輛<b id="stC">0</b></div>
       <div>最高連殺<b id="stCombo">0</b></div>
       <div id="stTimeBox">遊戲時間<b id="stTime">0</b></div>
+      <div id="stRBox" style="display:none;grid-column:1/-1">救出義人<b id="stR">0</b></div>
     </div>
     <div class="btns">
       <button class="btn sec" id="menuBtn">主選單</button>
@@ -201,6 +207,28 @@ const HAIRS = ['#2b2b2b', '#4a3222', '#6b4423', '#1c1c1c', '#c98d4b', '#8a8a8a']
 const SKINS = ['#ffd8b5', '#f5c79e', '#e0ac7e', '#c68b59'];
 const ROOFS = ['#f2b5a0', '#f7d794', '#b8d8e8', '#d6c1e8', '#f5c6d6', '#c9e4b4', '#e8e2d0', '#ffd8a8', '#a8c8f0', '#e0e0e0'];
 
+/* ---------- 索多瑪模式（早期迦南／黎凡特 青銅時代）設定 ---------- */
+const SODOM_TIME = 90;          // 索多瑪模式秒數
+const RESCUE_SCORE = 300;       // 救出／失去義人的分數
+const DIS_S = {
+  bolt:    { name: '鹽柱',     icon: '🧂', cd: 0.8, r: 34, desc: '化為鹽柱' },
+  meteor:  { name: '天火',     icon: '🔥', cd: 4.5, r: 95, desc: '硫磺火雨' },
+  tornado: { name: '忌邪之眼', icon: '👁️', cd: 6,   r: 46, desc: '使人瘋狂' },
+  ghost:   { name: '天使救援', icon: '😇', cd: 1.2, r: 60, desc: '接走義人' },
+};
+const dis = () => (G && G.mode === 'sodom') ? DIS_S : DIS;
+const CAR_POOL = { modern: ['scooter', 'car', 'taxi', 'bus'], sodom: ['donkey', 'cart', 'chariot', 'gold'] };
+Object.assign(CARS, {
+  donkey:  { len: 20, wid: 9,  spd: [45, 60],  pts: 15, w: 3 },   // 騎驢
+  cart:    { len: 38, wid: 16, spd: [38, 50],  pts: 20, w: 4 },   // 驢拉貨車
+  chariot: { len: 34, wid: 18, spd: [80, 100], pts: 25, w: 2 },   // 雙馬戰車
+  gold:    { len: 54, wid: 22, spd: [42, 52],  pts: 50, w: 1 },   // 貴族黃金馬車
+});
+const ROBES = ['#e8dcc0', '#cdb68c', '#a0522d', '#8b6f47', '#d9c7a3', '#b5651d', '#f0e6d0', '#6e4b2a'];
+const RICH = ['#7b2d8b', '#a8323e', '#2c5f8a', '#b8860b'];
+const MUD = ['#c8955c', '#d4a46a', '#b9824f', '#dcb07a', '#c08a55', '#cf9e66'];
+const GOLD = '#f5c542';
+
 /* =========================================================
    音效（用程式即時合成，不需要外部檔案）
    ========================================================= */
@@ -246,7 +274,70 @@ function sfx(k) {
       tone(rand(600, 800), rand(1000, 1300), 0.08, 'square', 0.04);
     }
     else if (k === 'crash') { noise(0.35, 'bandpass', 1200, 0.25); }
+    else if (k === 'salt') { tone(1800, 2600, 0.35, 'sine', 0.08); tone(2400, 3200, 0.3, 'triangle', 0.05); noise(0.4, 'highpass', 4000, 0.15); }
+    else if (k === 'fire') { noise(1.4, 'lowpass', 700, 0.35, 0.3); tone(500, 90, 1.2, 'sawtooth', 0.04); }
+    else if (k === 'fboom') {
+      const now = performance.now(); if (now - lastFb < 70) return; lastFb = now;
+      noise(0.35, 'lowpass', 800, 0.35); tone(160, 50, 0.3, 'sine', 0.25);
+    }
+    else if (k === 'eye') { tone(110, 55, 1.6, 'sawtooth', 0.07); tone(165, 82, 1.6, 'sine', 0.1); }
+    else if (k === 'angel') { [880, 1108.7, 1318.5, 1760].forEach((f, i) => setTimeout(() => tone(f, f * 1.002, 1.2, 'triangle', 0.07), i * 90)); }
+    else if (k === 'chime') { tone(1318.5, 1320, 0.8, 'sine', 0.08); tone(1760, 1762, 0.8, 'sine', 0.05); }
+    else if (k === 'fail') { tone(400, 180, 0.6, 'triangle', 0.12); }
+    else if (k === 'madboom') { noise(0.5, 'lowpass', 900, 0.45); tone(220, 50, 0.4, 'square', 0.08); }
   } catch (e) {}
+}
+let lastFb = 0;
+
+/* ---------- 索多瑪背景音樂：低沉持續音＋沙漠風聲＋稀疏的撥弦聲（全部即時合成） ---------- */
+let bgm = null;
+function startBGM() {
+  stopBGM();
+  if (muted || !G || G.mode !== 'sodom') return;
+  const a = audio(); if (!a) return;
+  const t0 = a.currentTime, out = a.createGain();
+  out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(0.55, t0 + 2.5); out.connect(a.destination);
+  const nodes = [];
+  [[73.42, 'sawtooth', 0.03], [73.8, 'sawtooth', 0.03], [110, 'triangle', 0.05], [146.83, 'sine', 0.025]].forEach(([f, type, v]) => {
+    const o = a.createOscillator(), lp = a.createBiquadFilter(), g = a.createGain();
+    o.type = type; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = 420; g.gain.value = v;
+    o.connect(lp); lp.connect(g); g.connect(out); o.start(); nodes.push(o);
+  });
+  const n = a.createBufferSource(), bp = a.createBiquadFilter(), ng = a.createGain();
+  n.buffer = noiseBuf; n.loop = true; bp.type = 'bandpass'; bp.frequency.value = 500; bp.Q.value = 0.7; ng.gain.value = 0.05;
+  n.connect(bp); bp.connect(ng); ng.connect(out); n.start(); nodes.push(n);
+  const l1 = a.createOscillator(), l1g = a.createGain(); l1.frequency.value = 0.06; l1g.gain.value = 300; l1.connect(l1g); l1g.connect(bp.frequency); l1.start(); nodes.push(l1);
+  const l2 = a.createOscillator(), l2g = a.createGain(); l2.frequency.value = 0.09; l2g.gain.value = 0.035; l2.connect(l2g); l2g.connect(ng.gain); l2.start(); nodes.push(l2);
+  const scale = [293.66, 311.13, 369.99, 392, 440, 466.16, 523.25, 587.33];
+  let next = t0 + 2, idx = 4;
+  const timer = setInterval(() => {
+    if (!AC) return;
+    while (next < AC.currentTime + 0.6) {
+      if (Math.random() < 0.65) { idx = clamp(idx + pick([-2, -1, -1, 0, 1, 1, 2]), 0, scale.length - 1); pluck(scale[idx] * (Math.random() < 0.2 ? 0.5 : 1), next, out); }
+      if (Math.random() < 0.22) drum(next, out);
+      next += pick([0.6, 0.6, 0.9, 1.2, 1.8, 2.4]);
+    }
+  }, 200);
+  bgm = { out, nodes, timer };
+}
+function pluck(f, t, out) {
+  const a = AC, o = a.createOscillator(), o2 = a.createOscillator(), lp = a.createBiquadFilter(), g = a.createGain();
+  o.type = 'triangle'; o.frequency.value = f; o2.type = 'sawtooth'; o2.frequency.value = f * 1.003;
+  lp.type = 'lowpass'; lp.frequency.setValueAtTime(2400, t); lp.frequency.exponentialRampToValueAtTime(500, t + 1.2);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.07, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+  o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(out); o.start(t); o2.start(t); o.stop(t + 1.9); o2.stop(t + 1.9);
+}
+function drum(t, out) {
+  const a = AC, o = a.createOscillator(), g = a.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(95, t); o.frequency.exponentialRampToValueAtTime(48, t + 0.35);
+  g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.45);
+}
+function stopBGM() {
+  if (!bgm) return;
+  const b = bgm; bgm = null; clearInterval(b.timer);
+  try { const now = AC.currentTime; b.out.gain.cancelScheduledValues(now); b.out.gain.setValueAtTime(b.out.gain.value, now); b.out.gain.linearRampToValueAtTime(0.0001, now + 0.6); } catch (e) {}
+  setTimeout(() => { b.nodes.forEach(n => { try { n.stop(); } catch (e) {} }); try { b.out.disconnect(); } catch (e) {} }, 700);
 }
 
 /* =========================================================
@@ -261,7 +352,9 @@ function chooseWorldSize() {
   else { W = 640; H = clamp(Math.round(640 / a), 640, 1300); }
 }
 
-function genCity() {
+let genTheme = 'modern';
+function genCity(theme) {
+  genTheme = theme || 'modern';
   const nv = Math.max(2, Math.round(W / 250)), nh = Math.max(2, Math.round(H / 240));
   const vr = [], hr = [];
   for (let k = 0; k < nv; k++) vr.push(Math.round((k + 0.5) * W / nv + rand(-18, 18)));
@@ -286,10 +379,15 @@ function genCity() {
     const inner = blocks.filter(b => b.x > 0 && b.y > 0 && b.x + b.w < W && b.y + b.h < H);
     (inner.length ? pick(inner) : pick(blocks)).type = 'park';
   }
+  if (genTheme === 'sodom') { // 梯形巨塔
+    const cand = blocks.filter(b => b.type === 'bld' && b.w > 140 && b.h > 140 && b.x > 0 && b.y > 0 && b.x + b.w < W && b.y + b.h < H);
+    cand.forEach(b => { if (Math.random() < 0.3) b.type = 'tower'; });
+    if (cand.length && !blocks.some(b => b.type === 'tower')) pick(cand).type = 'tower';
+  }
   for (const b of blocks) {
     if (b.type === 'bld') { b.lots = []; splitLot(b.x + 5, b.y + 5, b.w - 10, b.h - 10, b.lots, 0); }
-    else {
-      b.pond = b.w > 120 && b.h > 110 && Math.random() < 0.7;
+    else if (b.type === 'park') {
+      b.pond = b.w > 120 && b.h > 110 && (genTheme === 'sodom' || Math.random() < 0.7);
       b.trees = [];
       const n = Math.round(b.w * b.h / 1800);
       for (let i = 0; i < n; i++) {
@@ -299,7 +397,7 @@ function genCity() {
       }
     }
   }
-  city = { vr, hr, xs, ys, blocks };
+  city = { vr, hr, xs, ys, blocks, theme: genTheme };
 }
 
 function splitLot(x, y, w, h, out, depth) {
@@ -311,6 +409,12 @@ function splitLot(x, y, w, h, out, depth) {
     return;
   }
   const lot = { x, y, w, h, c: pick(ROOFS), items: [] };
+  if (genTheme === 'sodom') { // 泥磚屋：陶罐、梯子、染布、金飾、陶爐
+    lot.c = pick(MUD); lot.court = w > 55 && h > 55 && Math.random() < 0.55;
+    const n = ri(1, 4);
+    for (let i = 0; i < n; i++) lot.items.push({ t: pick(['jar', 'jar', 'ladder', 'cloth', 'gold', 'oven']), x: rand(x + 9, x + w - 15), y: rand(y + 9, y + h - 15), c: pick(RICH) });
+    out.push(lot); return;
+  }
   const nt = ri(0, 2); // 頂樓水塔（台灣特色！）
   for (let i = 0; i < nt; i++) lot.items.push({ t: 'tank', x: rand(x + 14, x + w - 14), y: rand(y + 14, y + h - 14), r: rand(5, 7) });
   const na = ri(0, 3); // 冷氣室外機
@@ -324,6 +428,7 @@ function renderBG() {
   bg = document.createElement('canvas');
   bg.width = Math.ceil(W * sc); bg.height = Math.ceil(H * sc);
   const g = bg.getContext('2d'); g.scale(sc, sc);
+  if (city.theme === 'sodom') { renderSodomBG(g); return; }
   g.fillStyle = '#8fcf6a'; g.fillRect(0, 0, W, H);
   const { vr, hr, blocks } = city;
   // 街區
@@ -381,6 +486,131 @@ function renderBG() {
   }
 }
 
+/* ---------- 索多瑪城的背景：沙地、泥土街道、泥磚屋、梯形巨塔、綠洲、城牆 ---------- */
+function renderSodomBG(g) {
+  const { vr, hr, blocks } = city;
+  g.fillStyle = '#e6c992'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < W * H / 700; i++) { g.fillStyle = Math.random() < 0.5 ? 'rgba(150,110,60,.13)' : 'rgba(255,245,215,.2)'; g.fillRect(rand(0, W), rand(0, H), rand(1, 3), rand(1, 2)); }
+  for (const b of blocks) {
+    if (b.type === 'park') drawOasis(g, b);
+    else {
+      g.fillStyle = '#dcbd86'; rr(g, b.x, b.y, b.w, b.h, 6); g.fill();
+      if (b.type === 'tower') drawTower(g, b); else for (const l of b.lots) drawMudHouse(g, l);
+    }
+  }
+  g.fillStyle = '#d4b27a';
+  for (const x of vr) g.fillRect(x - ROAD / 2 - SIDE, -5, ROAD + SIDE * 2, H + 10);
+  for (const y of hr) g.fillRect(-5, y - ROAD / 2 - SIDE, W + 10, ROAD + SIDE * 2);
+  g.fillStyle = '#c69c64';
+  for (const x of vr) g.fillRect(x - ROAD / 2, -5, ROAD, H + 10);
+  for (const y of hr) g.fillRect(-5, y - ROAD / 2, W + 10, ROAD);
+  g.strokeStyle = 'rgba(110,75,40,.22)'; g.lineWidth = 1.6; // 車轍
+  for (const x of vr) for (const s of [-1, 1]) for (const o of [-4, 4]) { const lx = x + s * LANE + o; g.beginPath(); g.moveTo(lx, -5); g.lineTo(lx, H + 5); g.stroke(); }
+  for (const y of hr) for (const s of [-1, 1]) for (const o of [-4, 4]) { const ly = y + s * LANE + o; g.beginPath(); g.moveTo(-5, ly); g.lineTo(W + 5, ly); g.stroke(); }
+  drawWalls(g);
+}
+function drawOasis(g, b) {
+  g.fillStyle = '#b5c97a'; rr(g, b.x, b.y, b.w, b.h, 10); g.fill();
+  g.strokeStyle = 'rgba(90,130,50,.35)'; g.lineWidth = 3; // 灌溉田
+  for (let y = b.y + 8; y < b.y + b.h - 4; y += 9) { g.beginPath(); g.moveTo(b.x + 6, y); g.lineTo(b.x + b.w - 6, y); g.stroke(); }
+  if (b.pond) {
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w * 0.24, ry = b.h * 0.2;
+    g.fillStyle = '#e9d3a0'; g.beginPath(); g.ellipse(cx, cy, rx + 8, ry + 8, 0, 0, 7); g.fill();
+    g.fillStyle = '#3f9cc4'; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, 7); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.3)'; g.beginPath(); g.ellipse(cx - rx * 0.3, cy - ry * 0.3, rx * 0.35, ry * 0.18, -0.3, 0, 7); g.fill();
+  }
+  for (const t of b.trees) drawPalm(g, t.x, t.y, t.r * 1.2);
+}
+function drawPalm(g, x, y, r) {
+  g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.arc(x + 4, y + 4, r * 0.8, 0, 7); g.fill();
+  const rot = (x * 13 + y * 7) % 6;
+  for (let k = 0; k < 7; k++) {
+    const a = rot + k * Math.PI * 2 / 7;
+    g.save(); g.translate(x + Math.cos(a) * r * 0.45, y + Math.sin(a) * r * 0.45); g.rotate(a);
+    g.fillStyle = k % 2 ? '#3f8f3a' : '#5aa945'; g.beginPath(); g.ellipse(0, 0, r * 0.55, r * 0.17, 0, 0, 7); g.fill(); g.restore();
+  }
+  g.fillStyle = '#7a5230'; g.beginPath(); g.arc(x, y, r * 0.16, 0, 7); g.fill();
+  g.fillStyle = '#b5651d'; for (let k = 0; k < 3; k++) { g.beginPath(); g.arc(x + Math.cos(k * 2.1) * r * 0.22, y + Math.sin(k * 2.1) * r * 0.22, 1.4, 0, 7); g.fill(); }
+}
+function drawMudHouse(g, l) {
+  if (l.w < 8 || l.h < 8) return;
+  const t = 4;
+  g.fillStyle = 'rgba(80,50,20,.25)'; rr(g, l.x + 5, l.y + 5, l.w, l.h, 3); g.fill();
+  g.fillStyle = shade(l.c, -30); rr(g, l.x, l.y, l.w, l.h, 3); g.fill();            // 厚牆
+  g.fillStyle = l.c; rr(g, l.x + t, l.y + t, l.w - t * 2, l.h - t * 2, 2); g.fill();  // 平屋頂
+  g.strokeStyle = 'rgba(90,55,25,.13)'; g.lineWidth = 1;
+  for (let y = l.y + t + 5; y < l.y + l.h - t; y += 6) { g.beginPath(); g.moveTo(l.x + t, y); g.lineTo(l.x + l.w - t, y); g.stroke(); }
+  if (l.court) { // 中庭與水井
+    const cw = l.w * 0.42, ch = l.h * 0.42, cx = l.x + (l.w - cw) / 2, cy = l.y + (l.h - ch) / 2;
+    g.fillStyle = shade(l.c, -30); g.fillRect(cx - 2, cy - 2, cw + 4, ch + 4);
+    g.fillStyle = '#e8cf9c'; g.fillRect(cx, cy, cw, ch);
+    g.fillStyle = 'rgba(80,50,20,.25)'; g.fillRect(cx, cy, cw, 4);
+    g.fillStyle = '#8b6a45'; g.beginPath(); g.arc(cx + cw / 2, cy + ch / 2, 4, 0, 7); g.fill();
+    g.fillStyle = '#2d4a5a'; g.beginPath(); g.arc(cx + cw / 2, cy + ch / 2, 2.4, 0, 7); g.fill();
+  }
+  for (const it of l.items) {
+    if (it.t === 'jar') {
+      g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.arc(it.x + 1.5, it.y + 1.5, 3.5, 0, 7); g.fill();
+      g.fillStyle = '#a0522d'; g.beginPath(); g.arc(it.x, it.y, 3.5, 0, 7); g.fill();
+      g.fillStyle = '#4a2a14'; g.beginPath(); g.arc(it.x, it.y, 1.5, 0, 7); g.fill();
+    } else if (it.t === 'ladder') {
+      g.strokeStyle = '#6b4a2a'; g.lineWidth = 1.2; g.beginPath();
+      g.moveTo(it.x, it.y); g.lineTo(it.x, it.y + 12); g.moveTo(it.x + 5, it.y); g.lineTo(it.x + 5, it.y + 12);
+      for (let k = 2; k < 12; k += 3) { g.moveTo(it.x, it.y + k); g.lineTo(it.x + 5, it.y + k); }
+      g.stroke();
+    } else if (it.t === 'cloth') {
+      g.fillStyle = it.c; g.fillRect(it.x, it.y, 11, 6);
+      g.fillStyle = GOLD; g.fillRect(it.x, it.y + 2.5, 11, 1);
+    } else if (it.t === 'gold') {
+      g.fillStyle = GOLD; g.beginPath(); g.arc(it.x, it.y, 2.8, 0, 7); g.fill();
+      g.fillStyle = '#fff'; g.fillRect(it.x - 1.5, it.y - 1.5, 1.2, 1.2);
+    } else {
+      g.fillStyle = '#9b6a3c'; g.beginPath(); g.arc(it.x, it.y, 5, 0, 7); g.fill();
+      g.fillStyle = '#3a2414'; g.beginPath(); g.arc(it.x, it.y, 2.5, 0, 7); g.fill();
+    }
+  }
+}
+function drawTower(g, b) { // 梯形巨塔：一層層往上縮小的泥磚平台，頂端是金色神殿
+  const cx = b.x + b.w / 2, cy = b.y + b.h / 2, S = Math.min(b.w, b.h) - 24;
+  g.fillStyle = 'rgba(80,50,20,.3)'; g.fillRect(cx - S / 2 + 9, cy - S / 2 + 9, S, S);
+  for (let i = 0; i < 4; i++) {
+    const s = S * (1 - i * 0.21);
+    g.fillStyle = shade('#c08a55', i * 14 - 35); g.fillRect(cx - s / 2, cy - s / 2, s, s);
+    g.fillStyle = shade('#c08a55', i * 14); g.fillRect(cx - s / 2 + 3, cy - s / 2 + 3, s - 6, s - 6);
+    g.strokeStyle = 'rgba(90,55,25,.12)'; g.lineWidth = 1;
+    for (let y = cy - s / 2 + 7; y < cy + s / 2 - 3; y += 6) { g.beginPath(); g.moveTo(cx - s / 2 + 3, y); g.lineTo(cx + s / 2 - 3, y); g.stroke(); }
+  }
+  const sw = S * 0.13;
+  g.fillStyle = '#e3c08a'; g.fillRect(cx - sw / 2, cy, sw, S / 2);
+  g.strokeStyle = 'rgba(90,55,25,.35)'; g.lineWidth = 1;
+  for (let y = cy + 3; y < cy + S / 2; y += 4) { g.beginPath(); g.moveTo(cx - sw / 2, y); g.lineTo(cx + sw / 2, y); g.stroke(); }
+  const top = S * 0.37 * 0.6;
+  g.fillStyle = GOLD; rr(g, cx - top / 2, cy - top / 2, top, top, 3); g.fill();
+  g.strokeStyle = '#a67c00'; g.lineWidth = 2; g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.6)'; g.fillRect(cx - top / 2 + 3, cy - top / 2 + 3, top * 0.3, 3);
+  const s3 = S * (1 - 3 * 0.21) / 2 - 4;
+  g.fillStyle = '#ff7a00';
+  for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.beginPath(); g.arc(cx + dx * s3, cy + dy * s3, 2.5, 0, 7); g.fill(); }
+}
+function drawWalls(g) { // 城牆與城門塔樓
+  const T = 16, gap = ROAD / 2 + SIDE + 4;
+  const segs = (roads, max) => { const s = []; let p = 0; for (const r of roads) { s.push([p, r - gap]); p = r + gap; } s.push([p, max]); return s.filter(([a, b]) => b > a); };
+  const rect = (x, y, w, h) => {
+    g.fillStyle = 'rgba(60,35,10,.3)'; g.fillRect(x + 3, y + 3, w, h);
+    g.fillStyle = '#a8743f'; g.fillRect(x, y, w, h);
+    g.fillStyle = '#c48d55'; g.fillRect(x + 3, y + 3, w - 6, h - 6);
+  };
+  for (const [a, b] of segs(city.vr, W)) { rect(a, 0, b - a, T); rect(a, H - T, b - a, T); }
+  for (const [a, b] of segs(city.hr, H)) { rect(0, a, T, b - a); rect(W - T, a, T, b - a); }
+  g.fillStyle = '#8f6033';
+  for (const [a, b] of segs(city.vr, W)) for (let x = a + 4; x < b - 6; x += 10) { g.fillRect(x, 1, 5, 4); g.fillRect(x, H - 5, 5, 4); }
+  for (const [a, b] of segs(city.hr, H)) for (let y = a + 4; y < b - 6; y += 10) { g.fillRect(1, y, 4, 5); g.fillRect(W - 5, y, 4, 5); }
+  const tower = (x, y) => { rect(x - 13, y - 13, 26, 26); g.fillStyle = '#8f6033'; g.fillRect(x - 4, y - 4, 8, 8); };
+  for (const x of city.vr) { tower(x - gap, T / 2); tower(x + gap, T / 2); tower(x - gap, H - T / 2); tower(x + gap, H - T / 2); }
+  for (const y of city.hr) { tower(T / 2, y - gap); tower(T / 2, y + gap); tower(W - T / 2, y - gap); tower(W - T / 2, y + gap); }
+  for (const [x, y] of [[T / 2, T / 2], [W - T / 2, T / 2], [T / 2, H - T / 2], [W - T / 2, H - T / 2]]) tower(x, y);
+}
+
 function drawBuilding(g, l) {
   if (l.w < 8 || l.h < 8) return;
   g.fillStyle = 'rgba(0,0,0,.2)'; rr(g, l.x + 5, l.y + 5, l.w, l.h, 4); g.fill();
@@ -410,6 +640,7 @@ function newState(mode) {
   return {
     mode, t: 0, score: 0, killsP: 0, killsC: 0, maxCombo: 0,
     people: [], cars: [], fx: [], decals: [], wrecks: [], floaters: [], meteors: [], tornados: [],
+    lava: [], statues: [], saved: 0, lost: 0, rCount: 0, nextR: 5,
     spawnP: 0, spawnC: 0, shake: 0, flash: 0, over: false, paused: false,
     cd: { bolt: 0, meteor: 0, tornado: 0, ghost: 0 }, sel: (G && G.sel) || 'bolt', hover: null, carId: 0,
   };
@@ -417,10 +648,15 @@ function newState(mode) {
 const area = () => W * H / 640000;
 
 /* ---------- 行人 ---------- */
-function newPerson(edge) {
+function newPerson(edge, righteous) {
   const nx = city.xs.length, ny = city.ys.length;
+  const sod = G.mode === 'sodom';
   const p = {
-    spd: rand(26, 40), shirt: pick(SHIRTS), hair: pick(HAIRS), skin: pick(SKINS),
+    righteous: !!righteous,
+    spd: rand(26, 40), shirt: sod ? (Math.random() < 0.35 ? pick(RICH) : pick(ROBES)) : pick(SHIRTS),
+    hair: sod ? pick(['#1c1c1c', '#2b2b2b', '#4a3222']) : pick(HAIRS),
+    skin: sod ? pick(['#e0ac7e', '#c68b59', '#d9a066', '#b5784a']) : pick(SKINS),
+    cloth: sod && Math.random() < 0.4 ? pick(['#f0e6d0', '#cdb68c', '#7b2d8b', '#a8323e']) : null, gold: sod,
     ang: 0, ph: rand(0, 6), flee: 0, state: 'walk', born: edge ? 1 : 0, jx: rand(-3, 3), jy: rand(-3, 3), pi: -1, pj: -1,
   };
   if (edge) {
@@ -446,7 +682,7 @@ function nextNode(p) {
   const nx = city.xs.length, ny = city.ys.length;
   let opts = [[p.ci + 1, p.cj], [p.ci - 1, p.cj], [p.ci, p.cj + 1], [p.ci, p.cj - 1]]
     .filter(([i, j]) => i >= 0 && j >= 0 && i < nx && j < ny);
-  if (G.mode === 'pop') opts = opts.filter(([i, j]) => !isEdge(i, j));
+  if (G.mode === 'pop' || p.righteous) opts = opts.filter(([i, j]) => !isEdge(i, j));
   else if (Math.random() < 0.7) { const o = opts.filter(([i, j]) => !isEdge(i, j)); if (o.length) opts = o; }
   const o2 = opts.filter(([i, j]) => !(i === p.pi && j === p.pj));
   if (o2.length) opts = o2;
@@ -459,7 +695,8 @@ function nextNode(p) {
 }
 function updatePerson(p, dt) {
   if (p.born < 1) p.born = Math.min(1, p.born + dt * 3);
-  if (p.state === 'possessed') return updatePossessed(p, dt);
+  if (p.state === 'possessed' || p.state === 'mad') return updatePossessed(p, dt);
+  if (p.state === 'rescue') return;
   p.flee -= dt;
   const sp = p.spd * (p.flee > 0 ? 2.3 : 1);
   const tx = city.xs[p.ti] + p.jx, ty = city.ys[p.tj] + p.jy;
@@ -467,7 +704,7 @@ function updatePerson(p, dt) {
   p.ph += sp * dt * 0.28;
   if (d <= sp * dt) {
     p.x = tx; p.y = ty; p.ci = p.ti; p.cj = p.tj;
-    if (isEdge(p.ci, p.cj) && G.mode !== 'pop') { p.gone = true; return; }
+    if (isEdge(p.ci, p.cj) && G.mode !== 'pop' && !p.righteous) { p.gone = true; return; }
     nextNode(p);
   } else {
     p.x += dx / d * sp * dt; p.y += dy / d * sp * dt; p.ang = Math.atan2(dy, dx);
@@ -477,18 +714,20 @@ function updatePerson(p, dt) {
 /* ---------- 惡靈附身 ---------- */
 function updatePossessed(p, dt) {
   p.pt += dt;
+  const mad = p.state === 'mad'; // 瘋狂者會攻擊任何罪人（包括其他瘋狂者），但不會攻擊義人
   let best = null, bd = 1e12;
   for (const o of G.people) {
-    if (o === p || o.dead || o.state === 'possessed') continue;
+    if (o === p || o.dead) continue;
+    if (mad ? (o.righteous || o.state === 'rescue') : o.state === 'possessed') continue;
     const dd = d2(p.x, p.y, o.x, o.y); if (dd < bd) { bd = dd; best = o; }
   }
-  const sp = 105;
+  const sp = mad ? 82 : 105;
   if (best) {
     const d = Math.sqrt(bd);
     if (d < 11) {
-      kill(best, 'ghost'); p.kills++;
-      G.fx.push({ k: 'ring', x: best.x, y: best.y, r0: 4, r1: 26, t: 0, life: 0.35, c: '180,60,255' });
-      if (p.kills >= GHOST_KILLS) return possessedBoom(p);
+      kill(best, mad ? 'burn' : 'ghost'); p.kills++;
+      G.fx.push({ k: 'ring', x: best.x, y: best.y, r0: 4, r1: 26, t: 0, life: 0.35, c: mad ? '255,90,30' : '180,60,255' });
+      if (p.kills >= (mad ? 3 : GHOST_KILLS)) return possessedBoom(p);
     } else {
       p.x += (best.x - p.x) / d * sp * dt; p.y += (best.y - p.y) / d * sp * dt; p.ang = Math.atan2(best.y - p.y, best.x - p.x);
       if (d < 200) { best.flee = Math.max(best.flee, 1); best.dx_ = p.x; best.dy_ = p.y; }
@@ -496,11 +735,12 @@ function updatePossessed(p, dt) {
   }
   p.ph += sp * dt * 0.35;
   p.x = clamp(p.x, 5, W - 5); p.y = clamp(p.y, 5, H - 5);
-  if (p.pt > 12) possessedBoom(p);
+  if (p.pt > (mad ? p.maxT : 12)) possessedBoom(p);
 }
 function possessedBoom(p) {
   if (p.dead) return;
   const x = p.x, y = p.y;
+  if (p.state === 'mad') return madBoom(x, y);
   G.fx.push({ k: 'ring', x, y, r0: 10, r1: 110, t: 0, life: 0.55, c: '170,60,255' });
   for (let i = 0; i < 26; i++) { const a = rand(0, 7), s = rand(60, 220); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(3, 7), c: pick(['#b37feb', '#722ed1', '#ff85c0', '#ffffff']), t: 0, life: rand(0.4, 0.8), drag: 2.5 }); }
   G.decals.push({ k: 'scorch', x, y, r: 45, t: 0, life: 12, c: '90,20,120' });
@@ -512,9 +752,10 @@ function possessedBoom(p) {
 
 /* ---------- 車輛 ---------- */
 function newCar(randomPos) {
-  const tot = Object.values(CARS).reduce((s, c) => s + c.w, 0);
-  let r = Math.random() * tot, kind = 'car';
-  for (const k in CARS) { r -= CARS[k].w; if (r <= 0) { kind = k; break; } }
+  const pool = CAR_POOL[G.mode === 'sodom' ? 'sodom' : 'modern'];
+  const tot = pool.reduce((s, k) => s + CARS[k].w, 0);
+  let r = Math.random() * tot, kind = pool[0];
+  for (const k of pool) { r -= CARS[k].w; if (r <= 0) { kind = k; break; } }
   const spec = CARS[kind], { vr, hr } = city;
   const idx = ri(0, vr.length + hr.length - 1);
   const c = { kind, len: spec.len, wid: spec.wid, max: rand(spec.spd[0], spec.spd[1]), id: G.carId++, turned: false };
@@ -531,6 +772,11 @@ function newCar(randomPos) {
   c.ang = Math.atan2(c.dy, c.dx);
   c.color = kind === 'taxi' ? '#f7c600' : kind === 'bus' ? pick(['#2e86de', '#27ae60', '#e17055']) : pick(CAR_COLORS);
   c.helmet = pick(['#ff6b6b', '#ffffff', '#fcc419', '#4dabf7', '#222']);
+  if (G.mode === 'sodom') {
+    c.helmet = pick(RICH.concat(ROBES));
+    c.horse = pick(['#8b5a2b', '#5c3a1e', '#d9c3a0', '#3b2a1a']);
+    c.color = kind === 'gold' ? '#e8b923' : kind === 'donkey' ? pick(['#8d7b68', '#9e9182', '#6f6253']) : '#9c6b3c';
+  }
   for (const o of G.cars) if (o.dx === c.dx && o.dy === c.dy && d2(o.x, o.y, c.x, c.y) < 75 * 75) return null;
   return c;
 }
@@ -571,6 +817,14 @@ function updateCar(c, dt) {
 function floater(x, y, text, color, size) { G.floaters.push({ x, y, text, color: color || '#ffe066', size: size || 14, t: 0, life: 1 }); }
 function kill(e, style) {
   if (e.dead) return 0;
+  if (e.righteous) { // 義人：無敵時間或被天使接走中不會死；否則扣分
+    if (e.inv > 0 || e.state === 'rescue') return 0;
+    e.dead = true; G.lost++; G.score -= RESCUE_SCORE;
+    G.fx.push({ k: 'soul', x: e.x, y: e.y - 2, t: 0, life: 1.6, sway: 0 });
+    floater(e.x, e.y - 14, '義人殞落 -' + RESCUE_SCORE, '#ff4d4f', 18);
+    toast('💔 義人被災禍波及了…'); sfx('fail');
+    return 0;
+  }
   e.dead = true;
   const isCar = !!e.kind, pts = isCar ? CARS[e.kind].pts : 10;
   if (G.mode !== 'demo') G.score += pts;
@@ -579,12 +833,16 @@ function kill(e, style) {
   if (style === 'fling') {
     const a = rand(0, 7);
     G.fx.push({ k: 'fling', e, x: e.x, y: e.y, vx: Math.cos(a) * rand(60, 140), vy: Math.sin(a) * rand(60, 140) - 40, spin: rand(-14, 14), rot: e.ang || 0, t: 0, life: 1.1 });
+  } else if (style === 'salt') {
+    G.statues.push({ e, x: e.x, y: e.y, ang: e.ang || 0, t: 0, life: 9 });
+    for (let i = 0; i < 5; i++) G.fx.push({ k: 'p', x: e.x + rand(-6, 6), y: e.y + rand(-6, 6), vx: rand(-20, 20), vy: rand(-40, -10), r: rand(1.5, 2.5), c: '#ffffff', t: 0, life: 0.6, drag: 2 });
   } else if (isCar) {
-    G.wrecks.push({ x: e.x, y: e.y, ang: e.ang, len: e.len, wid: e.wid, t: 0, life: 6 });
+    G.wrecks.push({ x: e.x, y: e.y, ang: e.ang, len: e.len, wid: e.wid, kind: e.kind, t: 0, life: 6 });
     for (let i = 0; i < 8; i++) G.fx.push({ k: 'smoke', x: e.x + rand(-8, 8), y: e.y + rand(-6, 6), vx: rand(-20, 20), vy: rand(-30, -5), r: rand(5, 9), t: 0, life: rand(0.6, 1.2) });
     sfx('crash');
   } else {
     G.fx.push({ k: 'soul', x: e.x, y: e.y, t: 0, life: 1.3, sway: rand(0, 6) });
+    if (style === 'burn') for (let i = 0; i < 6; i++) G.fx.push({ k: 'p', x: e.x + rand(-4, 4), y: e.y + rand(-4, 4), vx: rand(-15, 15), vy: rand(-50, -20), r: rand(2, 4), c: pick(['#ff4d00', '#ffa940', '#ffd666']), t: 0, life: 0.5, drag: 1 });
     for (let i = 0; i < 6; i++) { const a = rand(0, 7), s = rand(30, 80); G.fx.push({ k: 'p', x: e.x, y: e.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(2, 4), c: style === 'ghost' ? '#b37feb' : '#ffffff', t: 0, life: 0.4, drag: 4 }); }
   }
   sfx('pop');
@@ -606,13 +864,14 @@ function combo(n, x, y) {
   }
 }
 function alarm(x, y, r) {
-  for (const p of G.people) if (!p.dead && p.state !== 'possessed' && d2(p.x, p.y, x, y) < r * r) { p.flee = 2.5; p.dx_ = x; p.dy_ = y; }
+  for (const p of G.people) if (!p.dead && (!p.state || p.state === 'walk') && d2(p.x, p.y, x, y) < r * r) { p.flee = 2.5; p.dx_ = x; p.dy_ = y; }
 }
 
 /* ---------- 四種天災 ---------- */
 function useDisaster(k, x, y) {
   if (!G || G.over || G.paused || G.mode === 'demo') return;
-  if (G.cd[k] > 0) { toast(DIS[k].icon + ' ' + DIS[k].name + '還在冷卻中…'); return; }
+  if (G.cd[k] > 0) { toast(dis()[k].icon + ' ' + dis()[k].name + '還在冷卻中…'); return; }
+  if (G.mode === 'sodom') { if (useSodom(k, x, y)) G.cd[k] = DIS_S[k].cd; return; }
   if (k === 'bolt') {
     const pts = []; let px = x + rand(-70, 70), py = y - 320;
     const n = 9;
@@ -658,7 +917,7 @@ function updateTornado(t, dt) {
   t.t += dt; t.spin += dt * 12;
   // 稍微朝最近的目標移動，比較好用
   let best = null, bd = 230 * 230;
-  for (const arr of [G.people, G.cars]) for (const e of arr) { if (e.dead) continue; const dd = d2(e.x, e.y, t.x, t.y); if (dd < bd) { bd = dd; best = e; } }
+  for (const arr of [G.people, G.cars]) for (const e of arr) { if (e.dead || (t.eye && (e.righteous || (e.state && e.state !== 'walk')))) continue; const dd = d2(e.x, e.y, t.x, t.y); if (dd < bd) { bd = dd; best = e; } }
   if (best) {
     const ta = Math.atan2(best.y - t.y, best.x - t.x);
     let da = ta - t.ang; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2;
@@ -670,12 +929,110 @@ function updateTornado(t, dt) {
   if (t.x < 20 || t.x > W - 20) { t.ang = Math.PI - t.ang; t.x = clamp(t.x, 20, W - 20); }
   if (t.y < 20 || t.y > H - 20) { t.ang = -t.ang; t.y = clamp(t.y, 20, H - 20); }
   if (t.t < t.life - 0.3) {
-    const r = DIS.tornado.r;
-    for (const p of G.people) if (!p.dead && d2(p.x, p.y, t.x, t.y) < r * r) kill(p, 'fling');
-    for (const c of G.cars) if (!c.dead && d2(c.x, c.y, t.x, t.y) < Math.pow(r + c.len * 0.3, 2)) kill(c, 'fling');
+    const r = dis().tornado.r;
+    if (t.eye) { // 忌邪之眼：罪人陷入瘋狂；駕車的人失控撞毀
+      for (const p of G.people) if (!p.dead && p.state === 'walk' && !p.righteous && d2(p.x, p.y, t.x, t.y) < r * r) {
+        p.state = 'mad'; p.kills = 0; p.pt = 0; p.maxT = rand(4, 7); p.flee = 0;
+        G.fx.push({ k: 'ring', x: p.x, y: p.y, r0: 3, r1: 18, t: 0, life: 0.3, c: '255,80,40' });
+      }
+      for (const c of G.cars) if (!c.dead && d2(c.x, c.y, t.x, t.y) < Math.pow(r + c.len * 0.3, 2)) kill(c, 'crash');
+    } else {
+      for (const p of G.people) if (!p.dead && d2(p.x, p.y, t.x, t.y) < r * r) kill(p, 'fling');
+      for (const c of G.cars) if (!c.dead && d2(c.x, c.y, t.x, t.y) < Math.pow(r + c.len * 0.3, 2)) kill(c, 'fling');
+    }
     t.nextAlarm -= dt; if (t.nextAlarm <= 0) { alarm(t.x, t.y, 160); t.nextAlarm = 0.5; }
   }
-  if (Math.random() < dt * 25) G.fx.push({ k: 'smoke', x: t.x + rand(-20, 20), y: t.y + rand(-6, 10), vx: rand(-40, 40), vy: rand(-10, 10), r: rand(5, 10), t: 0, life: 0.7 });
+  if (t.eye) { if (Math.random() < dt * 20) G.fx.push({ k: 'p', x: t.x + rand(-30, 30), y: t.y + rand(-30, 30), vx: 0, vy: rand(-30, -10), r: rand(1.5, 3), c: pick(['#fffbe6', '#ffe58f', '#ffffff']), t: 0, life: 0.8, drag: 1 }); }
+  else if (Math.random() < dt * 25) G.fx.push({ k: 'smoke', x: t.x + rand(-20, 20), y: t.y + rand(-6, 10), vx: rand(-40, 40), vy: rand(-10, 10), r: rand(5, 10), t: 0, life: 0.7 });
+}
+
+/* ---------- 索多瑪模式的四種天災 ---------- */
+function useSodom(k, x, y) {
+  if (k === 'bolt') { // 鹽柱：範圍內的人與馬車化為鹽柱
+    G.fx.push({ k: 'saltbeam', x, y, t: 0, life: 0.6 });
+    for (let i = 0; i < 16; i++) { const a = rand(0, 7), s = rand(40, 140); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(1.5, 3.5), c: pick(['#ffffff', '#f4f1ea', '#dfe9f3']), t: 0, life: 0.6, drag: 3 }); }
+    G.flash = 0.18; G.flashC = '255,255,250';
+    sfx('salt');
+    killArea(x, y, DIS_S.bolt.r, 'salt');
+  } else if (k === 'meteor') { // 天火：一陣硫磺火球散彈落下，留下熔岩
+    G.fx.push({ k: 'zone', x, y, r: DIS_S.meteor.r, t: 0, life: 1.4 });
+    for (let i = 0; i < 13; i++) {
+      const a = rand(0, 7), d = Math.sqrt(Math.random()) * DIS_S.meteor.r * 0.85;
+      const tx = x + Math.cos(a) * d, ty = y + Math.sin(a) * d;
+      G.meteors.push({ x: tx, y: ty, t: -(i * 0.07 + rand(0, 0.12)), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true });
+    }
+    sfx('fire');
+  } else if (k === 'tornado') { // 忌邪之眼
+    G.tornados.push({ x, y, ang: rand(0, 7), t: 0, life: 5.5, spin: 0, nextAlarm: 0, eye: true });
+    sfx('eye');
+  } else if (k === 'ghost') { // 天使救援
+    let best = null, bd = DIS_S.ghost.r * DIS_S.ghost.r;
+    for (const p of G.people) { if (!p.righteous || p.dead || p.state === 'rescue') continue; const dd = d2(p.x, p.y, x, y); if (dd < bd) { bd = dd; best = p; } }
+    if (!best) { toast('😇 天使只會接走發著白光的「義人」！'); return false; }
+    best.state = 'rescue'; G.saved++; G.score += RESCUE_SCORE;
+    floater(best.x, best.y - 18, '義人得救 +' + RESCUE_SCORE, '#fffbe6', 18);
+    G.fx.push({ k: 'angel', p: best, x: best.x, y: best.y, t: 0, life: 1.8 });
+    sfx('angel');
+  }
+  return true;
+}
+function fireImpact(m) {
+  const { x, y } = m;
+  G.fx.push({ k: 'ring', x, y, r0: 6, r1: 44, t: 0, life: 0.35, c: '255,170,40' });
+  for (let i = 0; i < 10; i++) { const a = rand(0, 7), s = rand(50, 160); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(2, 5), c: pick(['#ff4d00', '#ffa940', '#ffd666', '#fff566']), t: 0, life: rand(0.3, 0.6), drag: 2.5 }); }
+  G.lava.push({ x, y, r: rand(26, 34), t: 0, life: 6 });
+  if (G.lava.length > 80) G.lava.shift();
+  G.decals.push({ k: 'scorch', x, y, r: 36, t: 0, life: 14, c: '50,25,10' });
+  G.shake = Math.max(G.shake, 0.35);
+  sfx('fboom');
+  killArea(x, y, 30, 'burn');
+}
+function madBoom(x, y) {
+  G.fx.push({ k: 'ring', x, y, r0: 6, r1: 70, t: 0, life: 0.45, c: '255,110,30' });
+  for (let i = 0; i < 16; i++) { const a = rand(0, 7), s = rand(50, 170); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(2, 5), c: pick(['#ff4d00', '#ffa940', '#ffd666', '#5c3a1e']), t: 0, life: rand(0.3, 0.7), drag: 2.5 }); }
+  G.decals.push({ k: 'scorch', x, y, r: 34, t: 0, life: 10, c: '60,25,5' });
+  G.shake = Math.max(G.shake, 0.35);
+  floater(x, y - 18, '瘋狂自爆！', '#ff9c6e', 14);
+  sfx('madboom');
+  killArea(x, y, 48, 'burn');
+}
+function updateSodom(dt) {
+  // 義人出現：救援時限一位比一位短（12 秒起，每位少 1.5 秒，最低 5 秒）
+  G.nextR -= dt;
+  if (G.nextR <= 0 && G.t < SODOM_TIME - 5) {
+    const p = newPerson(false, true);
+    p.inv = 2.5; p.shirt = '#fbfbf5'; p.cloth = '#ffffff'; p.gold = false; p.born = 0;
+    p.rt = p.rmax = Math.max(5, 12 - G.rCount * 1.5); G.rCount++;
+    G.people.push(p); G.nextR = rand(12, 17);
+    toast('✨ 義人出現了！快切換「天使救援」！'); sfx('chime');
+  }
+  for (const p of G.people) {
+    if (!p.righteous || p.dead || p.gone) continue;
+    p.inv -= dt;
+    if (p.state === 'rescue') continue;
+    p.rt -= dt;
+    if (p.rt <= 0) {
+      p.gone = true; G.lost++; G.score -= RESCUE_SCORE;
+      G.fx.push({ k: 'soul', x: p.x, y: p.y - 2, t: 0, life: 1.6, sway: 0 });
+      floater(p.x, p.y - 14, '來不及了… -' + RESCUE_SCORE, '#ff4d4f', 18);
+      toast('💔 太晚了，義人沒能逃出索多瑪…'); sfx('fail');
+    }
+  }
+  // 熔岩：持續燒灼踏入的人車
+  for (const l of G.lava) {
+    l.t += dt;
+    if (l.t > l.life - 1) continue;
+    const r2 = l.r * l.r * 0.75;
+    for (const p of G.people) if (!p.dead && d2(p.x, p.y, l.x, l.y) < r2) kill(p, 'burn');
+    for (const c of G.cars) if (!c.dead && d2(c.x, c.y, l.x, l.y) < r2) kill(c, 'burn');
+    if (Math.random() < dt * 3) G.fx.push({ k: 'smoke', x: l.x + rand(-l.r / 2, l.r / 2), y: l.y + rand(-l.r / 2, l.r / 2), vx: rand(-6, 6), vy: rand(-22, -10), r: rand(4, 8), t: 0, life: 1.1 });
+  }
+  G.lava = G.lava.filter(l => l.t < l.life);
+  for (const s of G.statues) {
+    s.t += dt;
+    if (s.t > s.life - 0.8 && !s.cr) { s.cr = true; for (let i = 0; i < 8; i++) { const a = rand(0, 7), sp = rand(15, 50); G.fx.push({ k: 'p', x: s.x, y: s.y - 4, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: rand(1.5, 3), c: '#f4f1ea', t: 0, life: 0.7, drag: 3 }); } }
+  }
+  G.statues = G.statues.filter(s => s.t < s.life);
 }
 
 /* ---------- 每一幀的更新 ---------- */
@@ -696,13 +1053,15 @@ function update(dt) {
   spawn(dt);
   for (const p of G.people) if (!p.dead) updatePerson(p, dt);
   for (const c of G.cars) if (!c.dead) updateCar(c, dt);
-  for (const m of G.meteors) { m.t += dt; if (m.t >= m.dur && !m.done) { m.done = true; meteorImpact(m); } }
+  for (const m of G.meteors) { m.t += dt; if (m.t >= m.dur && !m.done) { m.done = true; if (m.small) fireImpact(m); else meteorImpact(m); } }
   for (const t of G.tornados) updateTornado(t, dt);
   for (const f of G.fx) {
     f.t += dt;
     if (f.k === 'p' || f.k === 'smoke') { f.x += f.vx * dt; f.y += f.vy * dt; const dr = Math.exp(-(f.drag || 1) * dt); f.vx *= dr; f.vy *= dr; }
     else if (f.k === 'fling') { f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.spin * dt; }
+    else if (f.k === 'angel' && f.t >= 0.6 && !f.picked) { f.picked = true; f.p.gone = true; }
   }
+  if (G.mode === 'sodom') updateSodom(dt);
   for (const w of G.wrecks) { w.t += dt; if (w.t < w.life - 1.5 && Math.random() < dt * 4) G.fx.push({ k: 'smoke', x: w.x + rand(-5, 5), y: w.y, vx: rand(-8, 8), vy: rand(-25, -12), r: rand(4, 7), t: 0, life: 1.2 }); }
   for (const f of G.floaters) f.t += dt;
   for (const d of G.decals) d.t += dt;
@@ -718,6 +1077,7 @@ function update(dt) {
   G.flash = Math.max(0, G.flash - dt * 1.4);
   if (G.mode === 'timed' && G.t >= TIME_LIMIT) endGame('時間到！');
   if (G.mode === 'pop' && G.people.length + G.cars.length >= POP_LIMIT) endGame('人口爆炸了！');
+  if (G.mode === 'sodom' && G.t >= SODOM_TIME) endGame('索多瑪已成焦土');
 }
 
 /* =========================================================
@@ -725,37 +1085,147 @@ function update(dt) {
    ========================================================= */
 function drawPerson(g, p) {
   const b = p.born < 1 ? 0.3 + 0.7 * p.born + Math.sin(p.born * Math.PI) * 0.25 : 1;
-  const poss = p.state === 'possessed';
+  const poss = p.state === 'possessed', mad = p.state === 'mad', holy = p.righteous;
   g.save(); g.translate(p.x, p.y);
-  if (poss) {
-    const pr = 13 + Math.sin(G.t * 10) * 2.5;
+  if (poss || mad || holy) { // 光暈：紫＝附身、紅＝瘋狂、白＝義人
+    const pr = 13 + Math.sin(G.t * (holy ? 4 : 10)) * 2.5 + (holy ? 4 : 0);
+    const col = holy ? '255,252,225' : mad ? '255,70,30' : '170,60,255';
     const grd = g.createRadialGradient(0, 0, 2, 0, 0, pr + 6);
-    grd.addColorStop(0, 'rgba(170,60,255,.65)'); grd.addColorStop(1, 'rgba(170,60,255,0)');
+    grd.addColorStop(0, 'rgba(' + col + ',' + (holy ? 0.95 : 0.65) + ')'); grd.addColorStop(1, 'rgba(' + col + ',0)');
     g.fillStyle = grd; g.beginPath(); g.arc(0, 0, pr + 6, 0, 7); g.fill();
   }
   g.scale(b, b);
   g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(1.5, 2.5, 7, 5, 0, 0, 7); g.fill();
   g.rotate(p.ang);
   const sw = Math.sin(p.ph) * 2.6;
-  g.fillStyle = poss ? '#7a4a8c' : p.skin;
+  const skin = poss ? '#7a4a8c' : mad ? '#d9583b' : p.skin;
+  g.fillStyle = skin;
   g.beginPath(); g.arc(sw, -6.6, 2, 0, 7); g.fill();
   g.beginPath(); g.arc(-sw, 6.6, 2, 0, 7); g.fill();
+  if (p.gold) { g.strokeStyle = GOLD; g.lineWidth = 1; g.beginPath(); g.arc(sw, -6.6, 2, 0, 7); g.stroke(); g.beginPath(); g.arc(-sw, 6.6, 2, 0, 7); g.stroke(); } // 金手環
   g.fillStyle = poss ? '#531dab' : p.shirt;
   g.beginPath(); g.ellipse(0, 0, 4.6, 7, 0, 0, 7); g.fill();
   g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = 1; g.stroke();
-  g.fillStyle = poss ? '#2b1640' : p.hair; g.beginPath(); g.arc(0, 0, 4.8, 0, 7); g.fill();
-  g.fillStyle = poss ? '#8c6aa3' : p.skin; g.beginPath(); g.arc(1.8, 0, 3.1, -1.3, 1.3); g.closePath(); g.fill();
-  if (poss) { g.fillStyle = '#ff1f1f'; g.beginPath(); g.arc(3.2, -1.7, 1.2, 0, 7); g.arc(3.2, 1.7, 1.2, 0, 7); g.fill(); }
+  if (p.gold) { g.strokeStyle = GOLD; g.lineWidth = 1.6; g.beginPath(); g.arc(0, 0, 5.6, -1.25, 1.25); g.stroke(); } // 金項鍊
+  g.fillStyle = poss ? '#2b1640' : (p.cloth || p.hair); g.beginPath(); g.arc(0, 0, 4.8, 0, 7); g.fill();
+  if (p.cloth) { g.strokeStyle = 'rgba(0,0,0,.18)'; g.lineWidth = 1; g.stroke(); }
+  g.fillStyle = poss ? '#8c6aa3' : skin; g.beginPath(); g.arc(1.8, 0, 3.1, -1.3, 1.3); g.closePath(); g.fill();
+  if (p.gold) { g.strokeStyle = GOLD; g.lineWidth = 1.2; g.beginPath(); g.arc(0, 0, 4.1, 0, 7); g.stroke(); } // 金頭環
+  if (poss || mad) { g.fillStyle = mad ? '#fff200' : '#ff1f1f'; g.beginPath(); g.arc(3.2, -1.7, 1.2, 0, 7); g.arc(3.2, 1.7, 1.2, 0, 7); g.fill(); }
   g.restore();
   if (poss) {
     g.font = 'bold 11px sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#2b1640';
     const s = p.kills + '/' + GHOST_KILLS; g.strokeText(s, p.x, p.y - 15); g.fillStyle = '#ffadd2'; g.fillText(s, p.x, p.y - 15);
+  } else if (mad) {
+    g.font = 'bold 12px sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#3a0a00';
+    g.strokeText('@', p.x, p.y - 12); g.fillStyle = '#ff7a45'; g.fillText('@', p.x, p.y - 12);
+  } else if (holy && p.rt != null && p.state !== 'rescue') { // 義人頭上的倒數圈
+    const k = clamp(p.rt / p.rmax, 0, 1), cy = p.y - 19;
+    g.fillStyle = 'rgba(30,30,50,.65)'; g.beginPath(); g.arc(p.x, cy, 7.5, 0, 7); g.fill();
+    g.strokeStyle = k > 0.5 ? '#52c41a' : k > 0.25 ? '#faad14' : '#ff4d4f'; g.lineWidth = 3;
+    g.beginPath(); g.arc(p.x, cy, 5.5, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); g.stroke();
+    if (p.inv > 0) { // 無敵護盾
+      g.strokeStyle = 'rgba(255,250,200,' + (0.55 + 0.35 * Math.sin(G.t * 20)) + ')'; g.lineWidth = 2;
+      g.beginPath(); g.arc(p.x, p.y, 12, 0, 7); g.stroke();
+    }
   } else if (p.flee > 0) {
     g.font = 'bold 11px sans-serif'; g.textAlign = 'center'; g.lineWidth = 3; g.strokeStyle = '#fff';
     g.strokeText('!', p.x, p.y - 11); g.fillStyle = '#f5222d'; g.fillText('!', p.x, p.y - 11);
   }
 }
+/* 青銅時代的交通工具（mode：無＝正常、true＝燒焦、'salt'＝鹽柱） */
+function drawAncient(g, c, mode) {
+  const L = c.len, Wd = c.wid;
+  const C = col => mode === 'salt' ? '#f3f0e8' : mode ? '#3a3330' : col;
+  const line = mode === 'salt' ? '#cfc8b8' : 'rgba(0,0,0,.35)';
+  g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(2, 3, L / 2, Wd / 2, 0, 0, 7); g.fill();
+  const animal = (ax, ay, len, w, colr) => {
+    colr = colr || '#8b5a2b';
+    g.fillStyle = C(colr); g.strokeStyle = line; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(ax, ay, len / 2, w / 2, 0, 0, 7); g.fill(); g.stroke();
+    g.beginPath(); g.ellipse(ax + len / 2 + 2, ay, 3.2, 2.2, 0, 0, 7); g.fill(); g.stroke();
+    g.fillStyle = C(shade(colr, -30));
+    g.beginPath(); g.ellipse(ax + len / 2, ay - 2.4, 1.6, 0.9, 0, 0, 7); g.ellipse(ax + len / 2, ay + 2.4, 1.6, 0.9, 0, 0, 7); g.fill();
+  };
+  const rider = (rx, robe) => {
+    g.fillStyle = C(robe); g.beginPath(); g.arc(rx, 0, 4, 0, 7); g.fill();
+    g.fillStyle = C('#2b2b2b'); g.beginPath(); g.arc(rx, 0, 2.6, 0, 7); g.fill();
+    if (!mode) { g.strokeStyle = GOLD; g.lineWidth = 1; g.stroke(); }
+  };
+  const wheel = (wx, wy, wl) => { g.fillStyle = C('#4a3320'); rr(g, wx - wl / 2, wy - 1.6, wl, 3.2, 1.5); g.fill(); };
+  const pole = (x1, x2, ys) => { g.strokeStyle = C('#5a3d22'); g.lineWidth = 1.5; g.beginPath(); for (const y of ys) { g.moveTo(x1, y); g.lineTo(x2, y); } g.stroke(); };
+  if (c.kind === 'donkey') { animal(0, 0, 15, 7, c.color); rider(-1, c.helmet); }
+  else if (c.kind === 'cart') {
+    animal(L / 2 - 9, 0, 12, 7, '#7d6a58');
+    pole(L / 2 - 15, -L / 2 + 16, [0]);
+    const bw = L - 20;
+    g.fillStyle = C('#9c6b3c'); rr(g, -L / 2, -Wd / 2 + 1, bw, Wd - 2, 2); g.fill();
+    g.strokeStyle = mode === 'salt' ? line : 'rgba(60,35,15,.4)'; g.lineWidth = 1;
+    for (let x = -L / 2 + 4; x < -L / 2 + bw; x += 4) { g.beginPath(); g.moveTo(x, -Wd / 2 + 1); g.lineTo(x, Wd / 2 - 1); g.stroke(); }
+    g.fillStyle = C('#b5651d'); g.beginPath(); g.arc(-L / 2 + 5, -2.5, 2.6, 0, 7); g.arc(-L / 2 + 11, 2.5, 2.6, 0, 7); g.fill();
+    g.fillStyle = C('#d9c7a3'); g.beginPath(); g.arc(-L / 2 + 13, -3, 2.8, 0, 7); g.fill();
+    wheel(-L / 2 + bw / 2, -Wd / 2, 9); wheel(-L / 2 + bw / 2, Wd / 2, 9);
+  } else if (c.kind === 'chariot') {
+    animal(L / 2 - 9, -4.5, 14, 6, c.horse); animal(L / 2 - 9, 4.5, 14, 6, c.horse);
+    pole(L / 2 - 16, -L / 2 + 10, [0]);
+    g.fillStyle = C('#a0522d'); rr(g, -L / 2, -6, 11, 12, 4); g.fill();
+    if (!mode) { g.strokeStyle = GOLD; g.lineWidth = 1.5; g.stroke(); }
+    wheel(-L / 2 + 5, -8, 10); wheel(-L / 2 + 5, 8, 10);
+    rider(-L / 2 + 5, c.helmet);
+  } else {
+    animal(L / 2 - 10, -5, 16, 7, '#f0ebe0'); animal(L / 2 - 10, 5, 16, 7, '#f0ebe0');
+    pole(L / 2 - 18, -L / 2 + 20, [-2, 2]);
+    g.fillStyle = C('#e8b923'); rr(g, -L / 2, -Wd / 2, L - 22, Wd, 4); g.fill();
+    g.strokeStyle = C('#a67c00'); g.lineWidth = 1.5; g.stroke();
+    g.fillStyle = C('#a8323e'); rr(g, -L / 2 + 4, -Wd / 2 + 3, L - 30, Wd - 6, 3); g.fill();
+    g.fillStyle = C(GOLD); g.beginPath(); g.arc(-L / 2 + (L - 22) / 2, 0, 2.5, 0, 7); g.fill();
+    wheel(-L / 2 + 6, -Wd / 2, 9); wheel(-L / 2 + 6, Wd / 2, 9); wheel(-L / 2 + L - 28, -Wd / 2, 9); wheel(-L / 2 + L - 28, Wd / 2, 9);
+  }
+}
+function drawEye(g, t) { // 忌邪之眼：天上的巨眼，視線照在地上
+  const a = Math.max(0, Math.min(1, t.t / 0.3, (t.life - t.t) / 0.4)), r = DIS_S.tornado.r;
+  g.save(); g.globalAlpha = a;
+  const grd = g.createRadialGradient(t.x, t.y, 4, t.x, t.y, r * 1.3);
+  grd.addColorStop(0, 'rgba(255,245,200,.6)'); grd.addColorStop(1, 'rgba(255,220,120,0)');
+  g.fillStyle = grd; g.beginPath(); g.arc(t.x, t.y, r * 1.3, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(255,215,90,.85)'; g.lineWidth = 2; g.setLineDash([4, 6]); g.lineDashOffset = -t.spin * 3;
+  g.beginPath(); g.arc(t.x, t.y, r, 0, 7); g.stroke(); g.setLineDash([]);
+  const ex = t.x, ey = t.y - 72;
+  g.fillStyle = 'rgba(255,240,180,.22)';
+  g.beginPath(); g.moveTo(ex - 10, ey); g.lineTo(ex + 10, ey); g.lineTo(t.x + r, t.y); g.lineTo(t.x - r, t.y); g.closePath(); g.fill();
+  g.strokeStyle = 'rgba(230,180,40,.9)'; g.lineWidth = 2;
+  for (let i = 0; i < 10; i++) { const aa = t.spin * 0.15 + i * Math.PI / 5; g.beginPath(); g.moveTo(ex + Math.cos(aa) * 30, ey + Math.sin(aa) * 22); g.lineTo(ex + Math.cos(aa) * 38, ey + Math.sin(aa) * 29); g.stroke(); }
+  g.fillStyle = '#fffdf2'; g.strokeStyle = '#b8860b'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(ex - 26, ey); g.quadraticCurveTo(ex, ey - 22, ex + 26, ey); g.quadraticCurveTo(ex, ey + 22, ex - 26, ey); g.fill(); g.stroke();
+  const lx = Math.cos(t.ang) * 4, ly = 3;
+  g.fillStyle = '#e0a800'; g.beginPath(); g.arc(ex + lx, ey + ly, 8, 0, 7); g.fill();
+  g.fillStyle = '#1a1206'; g.beginPath(); g.arc(ex + lx, ey + ly, 4, 0, 7); g.fill();
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(ex + lx - 2.5, ey + ly - 2.5, 1.6, 0, 7); g.fill();
+  g.restore();
+}
+function drawAngel(g, x, y, a) {
+  g.save(); g.globalAlpha = a; g.translate(x, y);
+  const fl = Math.sin(G.t * 14) * 0.35;
+  g.fillStyle = '#ffffff'; g.strokeStyle = 'rgba(200,190,150,.9)'; g.lineWidth = 1;
+  for (const s of [-1, 1]) { g.save(); g.scale(s, 1); g.rotate(-0.4 + fl); g.beginPath(); g.ellipse(13, -2, 13, 6, -0.3, 0, 7); g.fill(); g.stroke(); g.restore(); }
+  g.fillStyle = '#fffdf5'; g.beginPath(); g.moveTo(0, -6); g.lineTo(8, 12); g.lineTo(-8, 12); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#ffe0bd'; g.beginPath(); g.arc(0, -9, 5, 0, 7); g.fill();
+  g.strokeStyle = GOLD; g.lineWidth = 2; g.beginPath(); g.ellipse(0, -17, 6, 2.2, 0, 0, 7); g.stroke();
+  g.restore();
+}
+function drawFireball(m) {
+  const k = m.t / m.dur, e = k * k, mx = m.sx + (m.x - m.sx) * e, my = m.sy + (m.y - m.sy) * e;
+  const ang = Math.atan2(m.y - m.sy, m.x - m.sx), tl = 40 + 30 * k;
+  const grd = ctx.createLinearGradient(mx, my, mx - Math.cos(ang) * tl, my - Math.sin(ang) * tl);
+  grd.addColorStop(0, 'rgba(255,240,90,.95)'); grd.addColorStop(1, 'rgba(255,60,0,0)');
+  ctx.strokeStyle = grd; ctx.lineWidth = 8; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - Math.cos(ang) * tl, my - Math.sin(ang) * tl); ctx.stroke(); ctx.lineCap = 'butt';
+  ctx.fillStyle = 'rgba(255,220,60,.5)'; ctx.beginPath(); ctx.arc(mx, my, 10, 0, 7); ctx.fill();
+  ctx.fillStyle = '#ff8c1a'; ctx.beginPath(); ctx.arc(mx, my, 5.5, 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff3a0'; ctx.beginPath(); ctx.arc(mx - 1.5, my - 1.5, 2.2, 0, 7); ctx.fill();
+}
 function drawCarShape(g, c, burnt) {
+  if (CAR_POOL.sodom.includes(c.kind)) return drawAncient(g, c, burnt);
   const L = c.len, Wd = c.wid, col = burnt ? '#3a3a3a' : c.color;
   g.fillStyle = 'rgba(0,0,0,.25)'; rr(g, -L / 2 + 2, -Wd / 2 + 3, L, Wd, 4); g.fill();
   if (c.kind === 'scooter') {
@@ -826,16 +1296,43 @@ function draw() {
     }
   }
   ctx.globalAlpha = 1;
+  for (const l of G.lava) { // 熔岩
+    const a = Math.min(1, l.t / 0.2) * Math.min(1, (l.life - l.t) / 1.2);
+    ctx.globalAlpha = Math.max(0, a);
+    const grd = ctx.createRadialGradient(l.x, l.y, 2, l.x, l.y, l.r);
+    grd.addColorStop(0, 'rgba(255,240,120,.95)'); grd.addColorStop(0.45, 'rgba(255,120,20,.9)'); grd.addColorStop(1, 'rgba(160,30,0,0)');
+    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(l.x, l.y, l.r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffd666';
+    for (let i = 0; i < 3; i++) { const bb = Math.sin(G.t * 3 + i * 2 + l.x); ctx.beginPath(); ctx.arc(l.x + Math.cos(i * 2.1 + l.y) * l.r * 0.4, l.y + Math.sin(i * 2.1 + l.x) * l.r * 0.4, 1.5 + Math.max(0, bb) * 2, 0, 7); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
   for (const w of G.wrecks) {
     ctx.globalAlpha = Math.min(1, (w.life - w.t) / 1.5);
     ctx.save(); ctx.translate(w.x, w.y); ctx.rotate(w.ang); drawCarShape(ctx, w, true); ctx.restore();
     if (w.t < w.life - 2) { ctx.fillStyle = Math.random() < 0.5 ? '#ff7a00' : '#ffd000'; ctx.beginPath(); ctx.arc(w.x + rand(-3, 3), w.y + rand(-3, 3), rand(2, 4.5), 0, 7); ctx.fill(); }
   }
   ctx.globalAlpha = 1;
+  // 鹽柱
+  for (const s of G.statues) {
+    ctx.globalAlpha = Math.max(0, Math.min(1, (s.life - s.t) / 0.8));
+    if (s.e.kind) { ctx.save(); ctx.translate(s.x, s.y); ctx.rotate(s.ang); drawCarShape(ctx, s.e, 'salt'); ctx.restore(); }
+    else {
+      ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.beginPath(); ctx.ellipse(s.x + 3, s.y + 3, 8, 5, 0, 0, 7); ctx.fill();
+      const grd = ctx.createLinearGradient(s.x - 6, 0, s.x + 6, 0);
+      grd.addColorStop(0, '#ffffff'); grd.addColorStop(1, '#d6d0c2');
+      ctx.fillStyle = grd; ctx.strokeStyle = '#bfb8a8'; ctx.lineWidth = 1;
+      rr(ctx, s.x - 6, s.y - 14, 12, 18, 5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fbfaf6'; ctx.beginPath(); ctx.arc(s.x, s.y - 14, 5, 0, 7); ctx.fill(); ctx.stroke();
+      if (((s.t * 2 + s.x * 0.01) % 1) < 0.12) { ctx.fillStyle = '#fff'; ctx.fillRect(s.x + 2, s.y - 17, 2, 2); }
+    }
+  }
+  ctx.globalAlpha = 1;
   // 隕石落點陰影
   for (const m of G.meteors) {
-    const k = m.t / m.dur, r = DIS.meteor.r;
+    if (m.t < 0) continue;
+    const k = m.t / m.dur, r = m.small ? 26 : DIS.meteor.r;
     ctx.fillStyle = 'rgba(0,0,0,' + (0.1 + 0.3 * k) + ')'; ctx.beginPath(); ctx.arc(m.x, m.y, r * (0.25 + 0.75 * k), 0, 7); ctx.fill();
+    if (m.small) continue;
     ctx.strokeStyle = 'rgba(255,60,60,.85)'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -G.t * 40;
     ctx.beginPath(); ctx.arc(m.x, m.y, r, 0, 7); ctx.stroke(); ctx.setLineDash([]);
   }
@@ -844,6 +1341,7 @@ function draw() {
   // 特效
   for (const f of G.fx) {
     const k = f.t / f.life;
+    ctx.globalAlpha = 1;
     if (f.k === 'p') { ctx.globalAlpha = 1 - k; ctx.fillStyle = f.c; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (1 - k * 0.5), 0, 7); ctx.fill(); }
     else if (f.k === 'smoke') { ctx.globalAlpha = 0.45 * (1 - k); ctx.fillStyle = '#7d7d7d'; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (1 + k * 1.5), 0, 7); ctx.fill(); }
     else if (f.k === 'ring') { ctx.globalAlpha = 1 - k; ctx.strokeStyle = 'rgba(' + f.c + ',1)'; ctx.lineWidth = 6 * (1 - k) + 1; ctx.beginPath(); ctx.arc(f.x, f.y, f.r0 + (f.r1 - f.r0) * Math.sqrt(k), 0, 7); ctx.stroke(); }
@@ -856,6 +1354,26 @@ function draw() {
     else if (f.k === 'possess') {
       const p = f.p; drawSoul(ctx, p.x, p.y - 40 * (1 - k), 1.6 - k * 0.6, 1 - k * 0.5);
     }
+    else if (f.k === 'saltbeam') { // 鹽柱的白色光柱
+      const a = 1 - k, r = DIS_S.bolt.r, w = r * 1.4 * (1 - k * 0.5);
+      const grd = ctx.createLinearGradient(f.x, f.y - 400, f.x, f.y);
+      grd.addColorStop(0, 'rgba(255,255,255,0)'); grd.addColorStop(1, 'rgba(255,255,250,' + 0.85 * a + ')');
+      ctx.fillStyle = grd; ctx.fillRect(f.x - w / 2, f.y - 400, w, 400);
+      ctx.globalAlpha = a; ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(f.x, f.y, r * (0.6 + k * 0.6), 0, 7); ctx.fill();
+    }
+    else if (f.k === 'zone') { // 天火範圍
+      ctx.globalAlpha = 1 - k; ctx.fillStyle = 'rgba(255,120,0,.12)'; ctx.strokeStyle = 'rgba(255,90,0,.9)'; ctx.lineWidth = 3;
+      ctx.setLineDash([10, 8]); ctx.lineDashOffset = -G.t * 40;
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 7); ctx.fill(); ctx.stroke(); ctx.setLineDash([]);
+    }
+    else if (f.k === 'angel') { // 天使降下、接走義人、升天
+      const t = f.t, a = t > 1.2 ? Math.max(0, 1 - (t - 1.2) / 0.6) : 1;
+      const ay = t < 0.6 ? f.y - 12 - 260 * Math.pow(1 - t / 0.6, 2) : f.y - 12 - (t - 0.6) * 200;
+      ctx.globalAlpha = 0.3 * a; ctx.fillStyle = '#fffbe0'; ctx.fillRect(f.x - 16, -50, 32, f.y + 50);
+      ctx.globalAlpha = a;
+      if (f.picked) drawPerson(ctx, Object.assign({}, f.p, { x: f.x, y: ay + 14, state: 'walk', rt: null, flee: 0, born: 1 }));
+      drawAngel(ctx, f.x, ay, a);
+    }
     else if (f.k === 'bolt') {
       const a = 1 - k;
       const line = (pts, w, col) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineJoin = 'round'; ctx.beginPath(); pts.forEach((pp, i) => i ? ctx.lineTo(pp[0], pp[1]) : ctx.moveTo(pp[0], pp[1])); ctx.stroke(); };
@@ -864,9 +1382,11 @@ function draw() {
     }
   }
   ctx.globalAlpha = 1;
-  for (const t of G.tornados) drawTornado(ctx, t);
+  for (const t of G.tornados) (t.eye ? drawEye : drawTornado)(ctx, t);
   // 空中的隕石
   for (const m of G.meteors) {
+    if (m.t < 0) continue;
+    if (m.small) { drawFireball(m); continue; }
     const k = m.t / m.dur, e = k * k;
     const mx = m.sx + (m.x - m.sx) * e, my = m.sy + (m.y - m.sy) * e;
     const ang = Math.atan2(m.y - m.sy, m.x - m.sx);
@@ -881,7 +1401,7 @@ function draw() {
   }
   // 滑鼠範圍提示
   if (G.hover && G.mode !== 'demo' && !G.over && !G.paused) {
-    const r = DIS[G.sel].r, ready = G.cd[G.sel] <= 0;
+    const r = dis()[G.sel].r, ready = G.cd[G.sel] <= 0;
     ctx.strokeStyle = ready ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
     ctx.beginPath(); ctx.arc(G.hover.x, G.hover.y, r, 0, 7); ctx.stroke(); ctx.setLineDash([]);
   }
@@ -913,13 +1433,16 @@ function draw() {
    畫面介面（分數列、天災按鈕、選單）
    ========================================================= */
 const bar = $('#bar');
-DIS_ORDER.forEach((k, i) => {
-  const d = DIS[k], b = document.createElement('button');
-  b.className = 'dis'; b.dataset.k = k;
-  b.innerHTML = '<span class="key">' + (i + 1) + '</span><span class="ico">' + d.icon + '</span><span class="nm">' + d.name + '</span><span class="ds">' + d.desc + '</span><div class="cdv"></div><div class="cdt"></div>';
-  b.addEventListener('click', () => selectDis(k));
-  bar.appendChild(b);
-});
+function buildBar() { // 依照模式換成對應的天災按鈕
+  const D = dis(); bar.innerHTML = '';
+  DIS_ORDER.forEach((k, i) => {
+    const d = D[k], b = document.createElement('button');
+    b.className = 'dis'; b.dataset.k = k;
+    b.innerHTML = '<span class="key">' + (i + 1) + '</span><span class="ico">' + d.icon + '</span><span class="nm">' + d.name + '</span><span class="ds">' + d.desc + '</span><div class="cdv"></div><div class="cdt"></div>';
+    b.addEventListener('click', () => selectDis(k));
+    bar.appendChild(b);
+  });
+}
 function selectDis(k) { if (!G) return; G.sel = k; audio(); for (const b of bar.children) b.classList.toggle('sel', b.dataset.k === k); }
 let toastTimer = 0;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1500); }
@@ -930,12 +1453,14 @@ function updateHud() {
   $('#scoreNum').textContent = G.score;
   for (const b of bar.children) {
     const k = b.dataset.k, cd = G.cd[k];
-    b.querySelector('.cdv').style.transform = 'scaleY(' + (cd / DIS[k].cd) + ')';
+    b.querySelector('.cdv').style.transform = 'scaleY(' + (cd / dis()[k].cd) + ')';
+    if (k === 'ghost') b.classList.toggle('alert', G.mode === 'sodom' && G.people.some(p => p.righteous && !p.dead && p.state !== 'rescue'));
     b.querySelector('.cdt').textContent = cd > 0 ? cd.toFixed(1) : '';
   }
   const info = $('#info');
   let html, warn = false;
   if (G.mode === 'timed') { const left = Math.max(0, TIME_LIMIT - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒'; warn = left <= 10; }
+  else if (G.mode === 'sodom') { const left = Math.max(0, SODOM_TIME - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒　😇 ' + G.saved; warn = left <= 10; }
   else if (G.mode === 'endless') html = '♾️ ' + fmtTime(G.t);
   else {
     const n = G.people.length + G.cars.length, r = n / POP_LIMIT;
@@ -988,13 +1513,15 @@ function seed(nP, nC) {
   for (const p of G.people) p.born = 1;
 }
 function startGame(mode) {
-  chooseWorldSize(); genCity();
+  chooseWorldSize(); genCity(mode === 'sodom' ? 'sodom' : 'modern');
   const prevSel = G && G.sel;
   G = newState(mode); if (prevSel) G.sel = prevSel;
   resize();
   if (mode === 'pop') seed(40, 8); else seed(Math.round(40 * area()), Math.round(12 * area()));
   lastHud = '';
+  buildBar();
   selectDis(G.sel);
+  if (mode === 'sodom') startBGM(); else stopBGM();
   showOnly(mode === 'demo' ? 'menu' : null);
   $('#pauseBtn').textContent = '⏸';
 }
@@ -1005,6 +1532,9 @@ function endGame(title) {
   $('#overScore').textContent = G.score;
   $('#stP').textContent = G.killsP; $('#stC').textContent = G.killsC; $('#stCombo').textContent = G.maxCombo;
   $('#stTime').textContent = fmtTime(G.t);
+  stopBGM();
+  $('#stRBox').style.display = G.mode === 'sodom' ? '' : 'none';
+  $('#stR').textContent = G.saved + ' 位（失去 ' + G.lost + ' 位）';
   const key = 'best_' + G.mode, best = store.get(key);
   if (G.score > best) { store.set(key, G.score); $('#overRec').innerHTML = '<span class="newrec">🎉 新紀錄！</span>'; }
   else $('#overRec').innerHTML = '<span style="color:#6b7895">最高紀錄：' + best + '</span>';
@@ -1014,6 +1544,7 @@ function togglePause() {
   if (!G || G.mode === 'demo' || G.over) return;
   G.paused = !G.paused;
   showOnly(G.paused ? 'pauseMenu' : null);
+  if (G.paused) stopBGM(); else startBGM();
 }
 document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => { audio(); startGame(b.dataset.mode); }));
 $('#pauseBtn').addEventListener('click', togglePause);
@@ -1022,7 +1553,10 @@ $('#finishBtn').addEventListener('click', () => { G.paused = false; showOnly(nul
 $('#quitBtn').addEventListener('click', goMenu);
 $('#menuBtn').addEventListener('click', goMenu);
 $('#againBtn').addEventListener('click', () => startGame(G.mode));
-$('#muteBtn').addEventListener('click', () => { muted = !muted; $('#muteBtn').textContent = muted ? '🔇' : '🔊'; });
+$('#muteBtn').addEventListener('click', () => {
+  muted = !muted; $('#muteBtn').textContent = muted ? '🔇' : '🔊';
+  if (muted) stopBGM(); else if (G && !G.paused && !G.over) startBGM();
+});
 function goMenu() { refreshBest(); startGame('demo'); $('#scoreNum').textContent = '0'; $('#info').innerHTML = ''; }
 document.addEventListener('visibilitychange', () => { if (document.hidden && G && G.mode !== 'demo' && !G.over && !G.paused) togglePause(); });
 
