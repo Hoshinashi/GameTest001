@@ -67,6 +67,23 @@ h2{margin:0 0 6px;font-size:28px}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;font-size:14px}
 .stats div{background:#f5f7fb;border-radius:12px;padding:8px}
 .stats b{display:block;font-size:20px}
+#tut{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:min(560px,calc(100% - 20px));z-index:5;
+  background:rgba(255,253,245,.97);color:var(--ink);border-radius:16px;padding:12px 14px 10px;box-shadow:0 8px 26px rgba(0,0,0,.35);border:3px solid #d4a017}
+#tut.hide{display:none}
+#tut .tstep{font-size:12px;font-weight:800;color:#b8860b;letter-spacing:1px}
+#tut .ttext{font-size:15px;line-height:1.65;margin:4px 0 8px}
+#tut .ttext b{color:#a8323e}
+#tut .tgoal{font-size:14px;font-weight:800;color:#d4380d;background:#fff1e6;border-radius:10px;padding:5px 10px;margin-bottom:8px}
+#tut .tbtns{display:flex;gap:8px;justify-content:flex-end}
+#tut button{border:0;border-radius:10px;padding:8px 14px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+#tutSkip{background:#e8ecf4;color:var(--muted)}
+#tutNext{background:var(--accent);color:#fff}
+.dis.tut-hl{animation:tuthl .45s infinite alternate;border-color:#ffd666}
+@keyframes tuthl{from{box-shadow:0 0 0 0 rgba(255,214,102,0)}to{box-shadow:0 0 16px 6px rgba(255,214,102,.95);transform:translateY(-6px)}}
+.mode .tag{display:inline-block;background:#fff1b8;color:#ad4e00;font-size:11px;font-weight:900;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.how h3{margin:4px 0 4px;font-size:15px;color:var(--ink)}
+.how .story{background:#fbf3df;border-left:4px solid #d4a017;border-radius:8px;padding:6px 10px;margin:4px 0 6px;color:#6b4a1a}
+.how hr{border:0;border-top:1px dashed #cdd3df;margin:10px 0}
 .newrec{color:#d4380d;font-weight:900;animation:pulse .5s infinite alternate;display:inline-block}
 .btns{display:flex;gap:10px;margin-top:12px}
 .btn{flex:1;border:0;border-radius:14px;padding:13px;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit}
@@ -96,31 +113,43 @@ h2{margin:0 0 6px;font-size:28px}
     <button class="hbtn" id="muteBtn" title="音效開關">🔊</button>
     <button class="hbtn" id="pauseBtn" title="暫停">⏸</button>
   </div>
-  <div id="stage"><canvas id="c"></canvas><div id="toast"></div></div>
+  <div id="stage"><canvas id="c"></canvas><div id="toast"></div>
+    <div id="tut" class="hide"><div class="tstep" id="tutStep"></div><div class="ttext" id="tutText"></div><div class="tgoal" id="tutGoal"></div>
+      <div class="tbtns"><button id="tutSkip">SKIP ⏭</button><button id="tutNext">下一步 ▶</button></div></div>
+  </div>
   <div id="bar"></div>
 </div>
 
 <div class="overlay" id="menu">
   <div class="panel">
     <h1>天災降臨</h1>
-    <p class="sub">化身任性的天神，用天災把城市搞得雞飛狗跳！</p>
+    <p class="sub">人類的罪惡招來神的憤怒——<br>各樣天災，即將接踵而至。</p>
     <div class="modes">
-      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>索多瑪・限時</b><span>90 秒內降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
+      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>索多瑪・限時<span class="tag">★ 推薦先玩</span></b><span>90 秒內降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
       <button class="mode m-sodompop" data-mode="sodompop"><span class="em">🏛️</span><div><b>索多瑪・人口爆炸</b><span>罪人越聚越多，城擠爆就輸；義人仍會出現</span></div><div class="best" data-best="sodompop"></div></button>
       <button class="mode m-timed" data-mode="timed"><span class="em">⏱️</span><div><b>現代・限時</b><span>60 秒內拿到最高分</span></div><div class="best" data-best="timed"></div></button>
       <button class="mode m-pop" data-mode="pop"><span class="em">🏙️</span><div><b>現代・人口爆炸</b><span>人越來越多，城市擠爆就輸了</span></div><div class="best" data-best="pop"></div></button>
     </div>
     <div class="how">
-      <b>玩法：</b>① 從畫面下方選一種天災 ② 點擊城市降下天災<br>
+      <h3>📜 索多瑪：罪惡之城的審判</h3>
+      <div class="story">約旦河平原上的索多瑪，金碧輝煌、富足安逸，城裡的人卻驕傲奢華、欺壓窮困，罪惡滔天。神決定降下審判，毀滅這座城。</div>
+      🧂 <b>鹽柱</b>：<b>無冷卻</b>，把小範圍內的人和馬車化為鹽柱<br>
+      🔥 <b>天火</b>：降下一陣硫磺火雨，落地處的熔岩會持續燒灼約 6 秒<br>
+      👁️ <b>忌邪之眼</b>：神的視線在城中游移，被看見的罪人陷入瘋狂、互相攻擊，最後自爆<br>
+      😇 <b>天使救援</b>：差派天使，接走城中的義人<br>
+      <b>✨ 義人機制：</b>即使是罪惡之城，城裡仍有少數善良的<b>義人</b>，神不願他們與惡人一同滅亡。義人會<b>發出白光</b>，頭上有<b>倒數圈</b>：及時切換「天使救援」點他 <b>+300</b>；倒數歸零或被天災波及 <b>-300</b>。義人剛出現時有 2.5 秒護盾，而且救援時限會一位比一位短！<br>
+      <b>計分：</b>人 +10、騎驢 +15、驢車 +20、戰車 +25、黃金馬車 +50
+      <hr>
+      <h3>🏙️ 現代城市</h3>
+      ⚡ <b>閃電</b>：<b>無冷卻</b>，瞬間命中小範圍<br>
+      ☄️ <b>隕石</b>：延遲約 1 秒落下，超大範圍<br>
+      🌪️ <b>龍捲風</b>：會自己移動，把沿路的人車捲走<br>
+      👻 <b>惡靈附身</b>：點一個人讓他發狂追殺別人，殺滿 5 人就自爆<br>
+      <b>計分：</b>人 +10、機車 +15、汽車 +20、計程車 +25、公車 +50
+      <hr>
       <b>規則：</b>「限時」比誰在時間內分數高；「人口爆炸」人會越生越快，城裡超過 150 個人車就輸<br>
-      <b>計分：</b>人類 +10、機車 +15、汽車 +20、計程車 +25、公車 +50，一次擊中 3 個以上有連殺加分！<br>
-      <b>現代城市的天災：</b><br>
-      ⚡ <b>閃電</b>：瞬間命中、範圍小、冷卻快<br>
-      ☄️ <b>隕石</b>：延遲落下、超大範圍<br>
-      🌪️ <b>龍捲風</b>：會自己移動，把沿路的東西捲走<br>
-      👻 <b>惡靈附身</b>：點一個人讓他發狂追殺別人，殺滿 5 人就自爆！<br>
-      📜 <b>索多瑪</b>：用鹽柱、天火、忌邪之眼毀滅罪惡之城；發著白光的<b>義人</b>出現時，要切換「天使救援」點他接走（+300），太晚或誤傷義人 -300！<br>
-      <span style="opacity:.8">電腦可用數字鍵 1～4 快速切換天災</span>
+      <b>連殺：</b>一次擊中 3 個以上，每個再加 10 分——大範圍天災才是高分關鍵！<br>
+      <span style="opacity:.8">第一次玩會有新手教學（可按 SKIP 跳過）・電腦可用數字鍵 1～4 切換天災</span>
     </div>
   </div>
 </div>
@@ -180,7 +209,8 @@ function shade(hex, amt) { // 顏色變亮(+)或變暗(-)
 }
 const store = {
   get(k) { try { return parseInt(localStorage.getItem('disaster_' + k) || '0', 10) || 0; } catch (e) { return 0; } },
-  set(k, v) { try { localStorage.setItem('disaster_' + k, String(v)); } catch (e) {} }
+  set(k, v) { try { localStorage.setItem('disaster_' + k, String(v)); } catch (e) {} },
+  has(k) { try { return localStorage.getItem('disaster_' + k) !== null; } catch (e) { return false; } }
 };
 function fmtTime(t) { t = Math.floor(t); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
 
@@ -190,9 +220,11 @@ function fmtTime(t) { t = Math.floor(t); return String(Math.floor(t / 60)).padSt
 const ROAD = 48, SIDE = 14, LANE = 11, SW = ROAD / 2 + SIDE / 2;
 const TIME_LIMIT = 60;          // 限時模式秒數
 const POP_LIMIT = 150;          // 人口爆炸模式的上限
+let POP_GROWTH = 0.05;          // 人口爆炸模式：每秒人口成長速度的增加量
+const COMBO_PER = 10;           // 連殺：一次擊中 3 個以上時，每個多加幾分
 const GHOST_KILLS = 5;          // 惡靈殺幾人後自爆
 const DIS = {
-  bolt:    { name: '閃電',   icon: '⚡', cd: 0.7, r: 30,  desc: '瞬間・小範圍' },
+  bolt:    { name: '閃電',   icon: '⚡', cd: 0,   r: 24,  desc: '無冷卻・小範圍' },
   meteor:  { name: '隕石',   icon: '☄️', cd: 3.5, r: 85,  desc: '延遲・大範圍' },
   tornado: { name: '龍捲風', icon: '🌪️', cd: 6,   r: 40,  desc: '持續移動' },
   ghost:   { name: '惡靈附身', icon: '👻', cd: 5, r: 50,  desc: '點人附身' },
@@ -214,7 +246,7 @@ const ROOFS = ['#f2b5a0', '#f7d794', '#b8d8e8', '#d6c1e8', '#f5c6d6', '#c9e4b4',
 const SODOM_TIME = 90;          // 索多瑪模式秒數
 const RESCUE_SCORE = 300;       // 救出／失去義人的分數
 const DIS_S = {
-  bolt:    { name: '鹽柱',     icon: '🧂', cd: 0.8, r: 34, desc: '化為鹽柱' },
+  bolt:    { name: '鹽柱',     icon: '🧂', cd: 0,   r: 26, desc: '無冷卻・化為鹽柱' },
   meteor:  { name: '天火',     icon: '🔥', cd: 4.5, r: 95, desc: '硫磺火雨' },
   tornado: { name: '忌邪之眼', icon: '👁️', cd: 6,   r: 46, desc: '使人瘋狂' },
   ghost:   { name: '天使救援', icon: '😇', cd: 1.2, r: 60, desc: '接走義人' },
@@ -237,7 +269,7 @@ const GOLD = '#f5c542';
 /* =========================================================
    音效（用程式即時合成，不需要外部檔案）
    ========================================================= */
-let AC = null, MG = null, noiseBuf = null, muted = false, lastPop = 0, silentEl = null;
+let AC = null, MG = null, LIM = null, noiseBuf = null, muted = false, lastPop = 0, silentEl = null;
 // 取得音訊引擎。第一次建立一定要發生在玩家點擊之後（瀏覽器規定），所以只在點擊時呼叫 unlockAudio 建立
 function audio() {
   if (!AC) return null;
@@ -248,7 +280,10 @@ function unlockAudio() {
   if (!AC) {
     try {
       AC = new (window.AudioContext || window.webkitAudioContext)();
-      MG = AC.createGain(); MG.gain.value = 1; MG.connect(AC.destination); // 總音量：所有聲音都經過這裡
+      MG = AC.createGain(); MG.gain.value = 1; // 總音量：所有聲音都經過這裡
+      LIM = AC.createDynamicsCompressor(); // 限制器：很多聲音疊在一起時（例如連點閃電）避免破音
+      LIM.threshold.value = -12; LIM.knee.value = 6; LIM.ratio.value = 20; LIM.attack.value = 0.002; LIM.release.value = 0.2;
+      MG.connect(LIM); LIM.connect(AC.destination);
       noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
       const d = noiseBuf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -845,7 +880,7 @@ function floater(x, y, text, color, size) { G.floaters.push({ x, y, text, color:
 function kill(e, style) {
   if (e.dead) return 0;
   if (e.righteous) { // 義人：無敵時間或被天使接走中不會死；否則扣分
-    if (e.inv > 0 || e.state === 'rescue') return 0;
+    if (e.inv > 0 || e.state === 'rescue' || G.tutorial) return 0;
     e.dead = true; G.lost++; G.score -= RESCUE_SCORE;
     G.fx.push({ k: 'soul', x: e.x, y: e.y - 2, t: 0, life: 1.6, sway: 0 });
     floater(e.x, e.y - 14, '義人殞落 -' + RESCUE_SCORE, '#ff4d4f', 18);
@@ -875,18 +910,22 @@ function kill(e, style) {
   sfx('pop');
   return 1;
 }
-function killArea(x, y, r, style) {
+function killArea(x, y, r, style, noCombo) {
   let n = 0;
   for (const p of G.people) if (!p.dead && d2(p.x, p.y, x, y) <= (r + 6) * (r + 6)) n += kill(p, style);
   for (const c of G.cars) if (!c.dead && d2(c.x, c.y, x, y) <= Math.pow(r + c.len * 0.35, 2)) n += kill(c, style);
-  combo(n, x, y);
+  if (!noCombo) combo(n, x, y);
   alarm(x, y, r + 140);
   return n;
+}
+function softFlash(c) { // 無冷卻技能的閃光：減弱，且最多約每 0.4 秒閃一次，避免快速閃爍
+  if (G.t - (G.lastSoftFlash || -9) < 0.4) return;
+  G.lastSoftFlash = G.t; G.flash = Math.max(G.flash, 0.1); G.flashC = c;
 }
 function combo(n, x, y) {
   if (n > G.maxCombo) G.maxCombo = n;
   if (n >= 3 && G.mode !== 'demo') {
-    const bonus = n * 5; G.score += bonus;
+    const bonus = n * COMBO_PER; G.score += bonus;
     floater(x, y - 30, n + ' 連殺！+' + bonus, '#ff7a45', 16 + Math.min(n, 12));
   }
 }
@@ -898,7 +937,7 @@ function alarm(x, y, r) {
 function useDisaster(k, x, y) {
   if (!G || G.over || G.paused || G.mode === 'demo') return;
   if (G.cd[k] > 0) { toast(dis()[k].icon + ' ' + dis()[k].name + '還在冷卻中…'); return; }
-  if (isSodom()) { if (useSodom(k, x, y)) G.cd[k] = DIS_S[k].cd; return; }
+  if (isSodom()) { if (useSodom(k, x, y)) { G.cd[k] = DIS_S[k].cd; tutEvent(k === 'ghost' ? 'rescue' : 'cast', k); } return; }
   if (k === 'bolt') {
     const pts = []; let px = x + rand(-70, 70), py = y - 320;
     const n = 9;
@@ -910,7 +949,7 @@ function useDisaster(k, x, y) {
     G.fx.push({ k: 'ring', x, y, r0: 4, r1: 40, t: 0, life: 0.3, c: '160,210,255' });
     for (let i = 0; i < 10; i++) { const a = rand(0, 7), s = rand(60, 160); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(1.5, 3), c: pick(['#fff', '#bae7ff', '#ffe58f']), t: 0, life: 0.35, drag: 3 }); }
     G.decals.push({ k: 'scorch', x, y, r: 22, t: 0, life: 10, c: '40,40,40' });
-    G.flash = 0.22; G.flashC = '220,235,255'; G.shake = Math.max(G.shake, 0.25);
+    softFlash('220,235,255'); G.shake = Math.max(G.shake, 0.12);
     sfx('zap');
     killArea(x, y, DIS.bolt.r, 'puff');
   } else if (k === 'meteor') {
@@ -929,6 +968,7 @@ function useDisaster(k, x, y) {
     floater(best.x, best.y - 20, '被附身了！', '#d3adf7', 15);
   }
   G.cd[k] = DIS[k].cd;
+  tutEvent('cast', k);
 }
 function meteorImpact(m) {
   const { x, y } = m;
@@ -978,15 +1018,16 @@ function useSodom(k, x, y) {
   if (k === 'bolt') { // 鹽柱：範圍內的人與馬車化為鹽柱
     G.fx.push({ k: 'saltbeam', x, y, t: 0, life: 0.6 });
     for (let i = 0; i < 16; i++) { const a = rand(0, 7), s = rand(40, 140); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(1.5, 3.5), c: pick(['#ffffff', '#f4f1ea', '#dfe9f3']), t: 0, life: 0.6, drag: 3 }); }
-    G.flash = 0.18; G.flashC = '255,255,250';
+    softFlash('255,255,250');
     sfx('salt');
     killArea(x, y, DIS_S.bolt.r, 'salt');
   } else if (k === 'meteor') { // 天火：一陣硫磺火球散彈落下，留下熔岩
     G.fx.push({ k: 'zone', x, y, r: DIS_S.meteor.r, t: 0, life: 1.4 });
+    const grp = { x, y, n: 0, left: 13 }; // 13 顆火球合計算一次連殺
     for (let i = 0; i < 13; i++) {
       const a = rand(0, 7), d = Math.sqrt(Math.random()) * DIS_S.meteor.r * 0.85;
       const tx = x + Math.cos(a) * d, ty = y + Math.sin(a) * d;
-      G.meteors.push({ x: tx, y: ty, t: -(i * 0.07 + rand(0, 0.12)), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true });
+      G.meteors.push({ x: tx, y: ty, t: -(i * 0.07 + rand(0, 0.12)), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true, grp });
     }
     sfx('fire');
   } else if (k === 'tornado') { // 忌邪之眼
@@ -1012,7 +1053,8 @@ function fireImpact(m) {
   G.decals.push({ k: 'scorch', x, y, r: 36, t: 0, life: 14, c: '50,25,10' });
   G.shake = Math.max(G.shake, 0.35);
   sfx('fboom');
-  killArea(x, y, 30, 'burn');
+  const g = m.grp; g.n += killArea(x, y, 30, 'burn', true);
+  if (--g.left === 0) combo(g.n, g.x, g.y);
 }
 function madBoom(x, y) {
   G.fx.push({ k: 'ring', x, y, r0: 6, r1: 70, t: 0, life: 0.45, c: '255,110,30' });
@@ -1023,21 +1065,26 @@ function madBoom(x, y) {
   sfx('madboom');
   killArea(x, y, 48, 'burn');
 }
+function spawnRighteous(win, central) {
+  let p = newPerson(false, true);
+  for (let i = 0; central && i < 40 && !(p.y > H * 0.45 && p.y < H * 0.85 && p.x > W * 0.15 && p.x < W * 0.85); i++) p = newPerson(false, true);
+  p.inv = 2.5; p.shirt = '#fbfbf5'; p.cloth = '#ffffff'; p.gold = false; p.born = 0;
+  p.rt = p.rmax = win;
+  G.people.push(p); sfx('chime');
+  return p;
+}
 function updateSodom(dt) {
   // 義人出現：救援時限一位比一位短（12 秒起，每位少 1.5 秒，最低 5 秒）
   G.nextR -= dt;
-  if (G.nextR <= 0 && (G.mode === 'sodompop' || G.t < SODOM_TIME - 5)) {
-    const p = newPerson(false, true);
-    p.inv = 2.5; p.shirt = '#fbfbf5'; p.cloth = '#ffffff'; p.gold = false; p.born = 0;
-    p.rt = p.rmax = Math.max(5, 12 - G.rCount * 1.5); G.rCount++;
-    G.people.push(p); G.nextR = rand(12, 17);
-    toast('✨ 義人出現了！快切換「天使救援」！'); sfx('chime');
+  if (!G.tutorial && G.nextR <= 0 && (G.mode === 'sodompop' || G.t < SODOM_TIME - 5)) {
+    spawnRighteous(Math.max(5, 12 - G.rCount * 1.5)); G.rCount++; G.nextR = rand(12, 17);
+    toast('✨ 義人出現了！快切換「天使救援」！');
   }
   for (const p of G.people) {
     if (!p.righteous || p.dead || p.gone) continue;
     p.inv -= dt;
     if (p.state === 'rescue') continue;
-    p.rt -= dt;
+    if (!G.tutorial) p.rt -= dt;
     if (p.rt <= 0) {
       p.gone = true; G.lost++; G.score -= RESCUE_SCORE;
       G.fx.push({ k: 'soul', x: p.x, y: p.y - 2, t: 0, life: 1.6, sway: 0 });
@@ -1064,8 +1111,8 @@ function updateSodom(dt) {
 
 /* ---------- 每一幀的更新 ---------- */
 function spawn(dt) {
-  if (isPop()) {
-    const rateP = 1.1 + G.t * 0.035, rateC = 0.45 + G.t * 0.006;
+  if (isPop() && !G.tutorial) {
+    const rateP = 1.1 + G.t * POP_GROWTH, rateC = 0.45 + G.t * 0.006;
     G.spawnP -= dt; while (G.spawnP <= 0) { G.people.push(newPerson(Math.random() < 0.5)); G.spawnP += 1 / rateP; }
     G.spawnC -= dt; while (G.spawnC <= 0) { const c = newCar(false); if (c) G.cars.push(c); G.spawnC += 1 / rateC; }
   } else {
@@ -1102,6 +1149,7 @@ function update(dt) {
   G.decals = G.decals.filter(d => d.t < d.life); if (G.decals.length > 40) G.decals.splice(0, G.decals.length - 40);
   G.shake = Math.max(0, G.shake - dt * 2.5);
   G.flash = Math.max(0, G.flash - dt * 1.4);
+  if (G.tutorial) return; // 新手教學期間不會結束遊戲
   if (G.mode === 'timed' && G.t >= TIME_LIMIT) endGame('時間到！');
   if (isPop() && G.people.length + G.cars.length >= POP_LIMIT) endGame(isSodom() ? '罪惡之城擠爆了！' : '人口爆炸了！');
   if (G.mode === 'sodom' && G.t >= SODOM_TIME) endGame('索多瑪已成焦土');
@@ -1426,6 +1474,16 @@ function draw() {
     ctx.fillStyle = '#7a4b2a'; ctx.beginPath(); ctx.arc(mx, my, 13, 0, 7); ctx.fill();
     ctx.fillStyle = '#5c3820'; ctx.beginPath(); ctx.arc(mx - 4, my + 3, 3.5, 0, 7); ctx.arc(mx + 4, my - 2, 2.5, 0, 7); ctx.fill();
   }
+  if (TUT && TUT.arrow) { // 新手教學：指出義人
+    const r = G.people.find(q => q.righteous && !q.dead && q.state !== 'rescue');
+    if (r) {
+      const by = r.y - 40 - Math.abs(Math.sin(G.t * 5)) * 10;
+      ctx.fillStyle = '#ffd666'; ctx.strokeStyle = '#ad4e00'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(r.x, by + 12); ctx.lineTo(r.x - 11, by - 4); ctx.lineTo(r.x - 4, by - 4); ctx.lineTo(r.x - 4, by - 16); ctx.lineTo(r.x + 4, by - 16); ctx.lineTo(r.x + 4, by - 4); ctx.lineTo(r.x + 11, by - 4); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.font = '900 14px "PingFang TC","Microsoft JhengHei",sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 4;
+      ctx.strokeText('義人', r.x, by - 22); ctx.fillStyle = '#fffbe6'; ctx.fillText('義人', r.x, by - 22);
+    }
+  }
   // 滑鼠範圍提示
   if (G.hover && G.mode !== 'demo' && !G.over && !G.paused) {
     const r = dis()[G.sel].r, ready = G.cd[G.sel] <= 0;
@@ -1470,7 +1528,7 @@ function buildBar() { // 依照模式換成對應的天災按鈕
     bar.appendChild(b);
   });
 }
-function selectDis(k) { if (!G) return; G.sel = k; for (const b of bar.children) b.classList.toggle('sel', b.dataset.k === k); }
+function selectDis(k) { if (!G) return; G.sel = k; for (const b of bar.children) b.classList.toggle('sel', b.dataset.k === k); tutEvent('select', k); }
 let toastTimer = 0;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1500); }
 
@@ -1480,13 +1538,14 @@ function updateHud() {
   $('#scoreNum').textContent = G.score;
   for (const b of bar.children) {
     const k = b.dataset.k, cd = G.cd[k];
-    b.querySelector('.cdv').style.transform = 'scaleY(' + (cd / dis()[k].cd) + ')';
+    b.querySelector('.cdv').style.transform = 'scaleY(' + (dis()[k].cd ? cd / dis()[k].cd : 0) + ')';
     if (k === 'ghost') b.classList.toggle('alert', isSodom() && G.people.some(p => p.righteous && !p.dead && p.state !== 'rescue'));
     b.querySelector('.cdt').textContent = cd > 0 ? cd.toFixed(1) : '';
   }
   const info = $('#info');
   let html, warn = false;
-  if (G.mode === 'timed') { const left = Math.max(0, TIME_LIMIT - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒'; warn = left <= 10; }
+  if (G.tutorial) html = '📖 新手教學';
+  else if (G.mode === 'timed') { const left = Math.max(0, TIME_LIMIT - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒'; warn = left <= 10; }
   else if (G.mode === 'sodom') { const left = Math.max(0, SODOM_TIME - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒　😇 ' + G.saved; warn = left <= 10; }
   else {
     const n = G.people.length + G.cars.length, r = n / POP_LIMIT;
@@ -1532,14 +1591,15 @@ window.addEventListener('keydown', e => {
 
 function showOnly(id) { for (const o of ['menu', 'pauseMenu', 'over']) $('#' + o).classList.toggle('hide', o !== id); }
 function refreshBest() {
-  document.querySelectorAll('[data-best]').forEach(el => { const v = store.get('best_' + el.dataset.best); el.innerHTML = v ? '最高分<br><b style="font-size:16px;display:inline">' + v + '</b>' : ''; });
+  document.querySelectorAll('[data-best]').forEach(el => { const k = 'best_' + el.dataset.best, v = store.get(k); el.innerHTML = store.has(k) ? '最高分<br><b style="font-size:16px;display:inline">' + v + '</b>' : ''; });
 }
 function seed(nP, nC) {
   for (let i = 0; i < nP; i++) G.people.push(newPerson(false));
   for (let i = 0; i < nC; i++) { const c = newCar(true); if (c) G.cars.push(c); }
   for (const p of G.people) p.born = 1;
 }
-function startGame(mode) {
+function startGame(mode, noTut) {
+  closeTut();
   chooseWorldSize(); const sodomTheme = mode === 'sodom' || mode === 'sodompop';
   genCity(sodomTheme ? 'sodom' : 'modern');
   const prevSel = G && G.sel;
@@ -1552,6 +1612,7 @@ function startGame(mode) {
   if (sodomTheme) startBGM(); else stopBGM();
   showOnly(mode === 'demo' ? 'menu' : null);
   $('#pauseBtn').textContent = '⏸';
+  if (!noTut && mode !== 'demo' && needTutorial(mode)) startTutorial(mode);
 }
 function endGame(title) {
   if (G.over) return;
@@ -1564,7 +1625,8 @@ function endGame(title) {
   $('#stRBox').style.display = isSodom() ? '' : 'none';
   $('#stR').textContent = G.saved + ' 位（失去 ' + G.lost + ' 位）';
   const key = 'best_' + G.mode, best = store.get(key);
-  if (G.score > best) { store.set(key, G.score); $('#overRec').innerHTML = '<span class="newrec">🎉 新紀錄！</span>'; }
+  // 第一次玩完一定會留下紀錄（之後就不會再出現新手教學）
+  if (!store.has(key) || G.score > best) { store.set(key, G.score); $('#overRec').innerHTML = '<span class="newrec">🎉 新紀錄！</span>'; }
   else $('#overRec').innerHTML = '<span style="color:#6b7895">最高紀錄：' + best + '</span>';
   setTimeout(() => showOnly('over'), 600);
 }
@@ -1577,7 +1639,7 @@ function togglePause() {
 document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => startGame(b.dataset.mode)));
 $('#pauseBtn').addEventListener('click', togglePause);
 $('#resumeBtn').addEventListener('click', togglePause);
-$('#finishBtn').addEventListener('click', () => { G.paused = false; showOnly(null); endGame('本局結束'); });
+$('#finishBtn').addEventListener('click', () => { G.paused = false; showOnly(null); if (G.tutorial) finishTutorial(); else endGame('本局結束'); });
 $('#quitBtn').addEventListener('click', goMenu);
 $('#menuBtn').addEventListener('click', goMenu);
 $('#againBtn').addEventListener('click', () => startGame(G.mode));
@@ -1587,6 +1649,103 @@ $('#muteBtn').addEventListener('click', () => {
 });
 function goMenu() { refreshBest(); startGame('demo'); $('#scoreNum').textContent = '0'; $('#info').innerHTML = ''; }
 document.addEventListener('visibilitychange', () => { if (document.hidden && G && G.mode !== 'demo' && !G.over && !G.paused) togglePause(); });
+
+/* =========================================================
+   新手教學（裝置上沒有該主題的任何紀錄時，第一次進入會出現；可 SKIP）
+   ========================================================= */
+let TUT = null;
+const tutSeen = {}; // 同一次開啟網頁中，教學只會出現一次
+const tutTheme = m => (m === 'sodom' || m === 'sodompop') ? 'sodom' : 'modern';
+function needTutorial(mode) {
+  const th = tutTheme(mode);
+  if (tutSeen[th]) return false;
+  const keys = th === 'sodom' ? ['best_sodom', 'best_sodompop'] : ['best_timed', 'best_pop'];
+  return !keys.some(k => store.has(k));
+}
+function sodomSteps(pop) {
+  return [
+    { need: 'next', text: '很久很久以前，約旦河平原上有一座繁華的城——<b>索多瑪</b>。<br>城裡金碧輝煌、富足安逸，人們卻驕傲奢華、欺壓窮困，罪惡的聲音直達天上。<br>神終於決定：<b>降下審判，毀滅這座城。</b>' },
+    { need: 'select', k: 'bolt', hl: 'bolt', enter: () => selectDis('meteor'), text: '第一種天災：<b>🧂 鹽柱</b>。<br>《創世記》記載，羅得的妻子回頭一望，就變成了一根鹽柱。', goal: '👇 點選畫面下方的「鹽柱」' },
+    { need: 'cast', k: 'bolt', count: 3, hl: 'bolt', text: '鹽柱<b>沒有冷卻時間</b>，想點就點！<br>點擊城裡的人或馬車，把他們化為鹽柱。', goal: '👆 點擊城市 3 次（{n} / 3）' },
+    { need: 'select', k: 'meteor', hl: 'meteor', text: '第二種天災：<b>🔥 天火</b>。<br>聖經記載，神從天上降下<b>硫磺與火</b>。', goal: '👇 點選「天火」' },
+    { need: 'cast', k: 'meteor', hl: 'meteor', delay: 2200, text: '天火會降下一陣硫磺火雨，落地處變成<b>熔岩</b>，持續燒灼約 6 秒。<br>它有冷卻時間，所以要<b>瞄準人多的地方</b>：一次燒掉越多人，連殺加分越多！', goal: '👆 對著人群降下天火' },
+    { need: 'select', k: 'tornado', hl: 'tornado', text: '第三種天災：<b>👁️ 忌邪之眼</b>。<br>神的視線會在城中游移，罪人無所遁形。', goal: '👇 點選「忌邪之眼」' },
+    { need: 'cast', k: 'tornado', hl: 'tornado', delay: 3000, text: '被神看見的罪人會<b>失去理智</b>（頭上出現 @），開始互相攻擊，最後自爆。', goal: '👆 點擊城市，降下忌邪之眼' },
+    { need: 'next', text: '但是，即使是這樣的罪惡之城，城裡仍有少數心地善良的<b>「義人」</b>。<br>神不願義人和惡人一同滅亡，於是<b>差派天使去拯救他們</b>。' },
+    { need: 'select', k: 'ghost', hl: 'ghost', arrow: true, enter: () => spawnRighteous(20, true), text: '看！那位<b>發著白光</b>的人就是義人，頭上的圈是剩下的時間。<br>義人出現時，「天使救援」按鈕也會發光提醒你。', goal: '👇 點選「天使救援」' },
+    { need: 'rescue', hl: 'ghost', arrow: true, delay: 1900, text: '點擊義人，讓天使把他接走！', goal: '👆 點擊發白光的義人' },
+    { need: 'next', text: '做得好！救出義人 <b>+300</b>。<br>但要小心：倒數歸零、或是被你的天災波及，都會 <b>-300</b>。義人剛出現時有短暫護盾，而且<b>救援時限會一位比一位短</b>——鹽柱別亂點喔！' },
+    { need: 'next', btn: '開始遊戲 ▶', text: pop ? '教學結束！<b>索多瑪・人口爆炸</b>：罪人會越聚越多，城裡超過 <b>150</b> 個人車就輸。撐得越久、分數越高！' : '教學結束！<b>索多瑪・限時</b>：<b>90 秒</b>內拿到最高分，也別忘了拯救義人。審判，開始！' },
+  ];
+}
+function modernSteps(pop) {
+  return [
+    { need: 'next', text: '人類的罪惡招來了天怒！<br>你將化身降下天災的那一位——先來認識四種天災吧。' },
+    { need: 'select', k: 'bolt', hl: 'bolt', enter: () => selectDis('meteor'), text: '第一種天災：<b>⚡ 閃電</b>。', goal: '👇 點選畫面下方的「閃電」' },
+    { need: 'cast', k: 'bolt', count: 3, hl: 'bolt', text: '閃電<b>沒有冷卻時間</b>，瞬間命中小範圍。<br>點擊城裡的人或車子！', goal: '👆 點擊城市 3 次（{n} / 3）' },
+    { need: 'select', k: 'meteor', hl: 'meteor', text: '第二種天災：<b>☄️ 隕石</b>。', goal: '👇 點選「隕石」' },
+    { need: 'cast', k: 'meteor', hl: 'meteor', delay: 1600, text: '隕石會延遲約 1 秒才落下，但<b>範圍超大</b>。地上的紅圈就是落點，瞄準人車聚集的地方！', goal: '👆 對著人群降下隕石' },
+    { need: 'select', k: 'tornado', hl: 'tornado', text: '第三種天災：<b>🌪️ 龍捲風</b>。', goal: '👇 點選「龍捲風」' },
+    { need: 'cast', k: 'tornado', hl: 'tornado', delay: 2500, text: '龍捲風會自己在城裡移動約 5 秒，把沿路的人車捲上天。', goal: '👆 點擊城市，召喚龍捲風' },
+    { need: 'select', k: 'ghost', hl: 'ghost', text: '第四種天災：<b>👻 惡靈附身</b>。', goal: '👇 點選「惡靈附身」' },
+    { need: 'cast', k: 'ghost', hl: 'ghost', delay: 2500, text: '點一個人，讓惡靈附身在他身上。<br>被附身的人會追殺身邊的人，殺滿 5 人就自爆！', goal: '👆 點擊城裡的一個人' },
+    { need: 'next', text: '計分：人 +10、車輛 +15～50。<br>一次擊中 3 個以上會有<b>連殺加分</b>——大範圍天災是拿高分的關鍵！' },
+    { need: 'next', btn: '開始遊戲 ▶', text: pop ? '教學結束！<b>現代・人口爆炸</b>：人會越生越快，城裡超過 <b>150</b> 個人車就輸。撐得越久、分數越高！' : '教學結束！<b>現代・限時</b>：<b>60 秒</b>內拿到最高分吧！' },
+  ];
+}
+function startTutorial(mode) {
+  const th = tutTheme(mode); tutSeen[th] = true;
+  TUT = { mode, steps: th === 'sodom' ? sodomSteps(mode === 'sodompop') : modernSteps(mode === 'pop'), i: -1, n: 0 };
+  G.tutorial = true; $('#tut').classList.remove('hide');
+  nextTut();
+}
+function nextTut() {
+  if (!TUT) return;
+  TUT.i++; TUT.n = 0; TUT.wait = false;
+  const s = TUT.steps[TUT.i];
+  if (!s) return finishTutorial();
+  renderTut();
+  if (s.enter) s.enter();
+}
+function renderTut() {
+  const s = TUT.steps[TUT.i];
+  $('#tutStep').textContent = '新手教學 ' + (TUT.i + 1) + ' / ' + TUT.steps.length;
+  $('#tutText').innerHTML = s.text;
+  const goal = s.goal ? s.goal.replace('{n}', TUT.n) : '';
+  $('#tutGoal').innerHTML = goal; $('#tutGoal').style.display = goal ? '' : 'none';
+  $('#tutNext').style.display = s.need === 'next' ? '' : 'none';
+  $('#tutNext').textContent = s.btn || '下一步 ▶';
+  for (const b of bar.children) b.classList.toggle('tut-hl', !!s.hl && b.dataset.k === s.hl);
+  TUT.arrow = !!s.arrow;
+}
+const tutMatch = (s, type, k) => s && s.need === type && (!s.k || s.k === k);
+function tutEvent(type, k) {
+  if (!TUT) return;
+  if (TUT.wait) { // 還在等上一步的動畫，但玩家已經做了下一步要做的事：直接往下走
+    if (tutMatch(TUT.steps[TUT.i + 1], type, k)) { nextTut(); tutEvent(type, k); }
+    return;
+  }
+  const s = TUT.steps[TUT.i];
+  if (!tutMatch(s, type, k)) return;
+  TUT.n++; renderTut();
+  if (TUT.n >= (s.count || 1)) {
+    const d = s.delay != null ? s.delay : (type === 'select' ? 0 : 500);
+    if (!d) return nextTut();
+    TUT.wait = true; const i = TUT.i;
+    setTimeout(() => { if (TUT && TUT.i === i) nextTut(); }, d);
+  }
+}
+function closeTut() {
+  TUT = null; $('#tut').classList.add('hide');
+  for (const b of bar.children) b.classList.remove('tut-hl');
+}
+function finishTutorial() { // 教學完成或按 SKIP：重新開一局乾淨的正式遊戲
+  const mode = TUT ? TUT.mode : G.mode;
+  startGame(mode, true);
+  toast('🔔 正式開始！');
+}
+$('#tutNext').addEventListener('click', () => { const s = TUT && TUT.steps[TUT.i]; if (s && s.need === 'next') nextTut(); });
+$('#tutSkip').addEventListener('click', finishTutorial);
 
 /* =========================================================
    主迴圈
