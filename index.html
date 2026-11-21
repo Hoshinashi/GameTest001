@@ -125,17 +125,17 @@ h2{margin:0 0 6px;font-size:28px}
     <h1>天災降臨</h1>
     <p class="sub">人類的罪惡招來神的憤怒——<br>各樣天災，即將接踵而至。</p>
     <div class="modes">
-      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>索多瑪・限時<span class="tag">★ 推薦先玩</span></b><span>90 秒內降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
-      <button class="mode m-sodompop" data-mode="sodompop"><span class="em">🏛️</span><div><b>索多瑪・人口爆炸</b><span>罪人越聚越多，城擠爆就輸；義人仍會出現</span></div><div class="best" data-best="sodompop"></div></button>
+      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>所多瑪・限時<span class="tag">★ 推薦先玩</span></b><span>90 秒內降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
+      <button class="mode m-sodompop" data-mode="sodompop"><span class="em">🏛️</span><div><b>所多瑪・人口爆炸</b><span>罪人越聚越多，城擠爆就輸；義人仍會出現</span></div><div class="best" data-best="sodompop"></div></button>
       <button class="mode m-timed" data-mode="timed"><span class="em">⏱️</span><div><b>現代・限時</b><span>60 秒內拿到最高分</span></div><div class="best" data-best="timed"></div></button>
       <button class="mode m-pop" data-mode="pop"><span class="em">🏙️</span><div><b>現代・人口爆炸</b><span>人越來越多，城市擠爆就輸了</span></div><div class="best" data-best="pop"></div></button>
     </div>
     <div class="how">
-      <h3>📜 索多瑪：罪惡之城的審判</h3>
-      <div class="story">約旦河平原上的索多瑪，金碧輝煌、富足安逸，城裡的人卻驕傲奢華、欺壓窮困，罪惡滔天。神決定降下審判，毀滅這座城。</div>
+      <h3>📜 所多瑪：罪惡之城的審判</h3>
+      <div class="story">約旦河平原上的所多瑪，金碧輝煌、富足安逸，城裡的人卻驕傲奢華、欺壓窮困，罪惡滔天。神決定降下審判，毀滅這座城。</div>
       🧂 <b>鹽柱</b>：<b>無冷卻</b>，把小範圍內的人和馬車化為鹽柱<br>
       🔥 <b>天火</b>：降下一陣硫磺火雨，落地處的熔岩會持續燒灼約 6 秒<br>
-      👁️ <b>忌邪之眼</b>：神的視線在城中游移，被看見的罪人陷入瘋狂、互相攻擊，最後自爆<br>
+      👁️ <b>忌邪之眼</b>：神的視線在城中游移，被看見的罪人陷入瘋狂、飛快地攻擊身邊的人，最後自爆<br>
       😇 <b>天使救援</b>：差派天使，接走城中的義人<br>
       <b>✨ 義人機制：</b>即使是罪惡之城，城裡仍有少數善良的<b>義人</b>，神不願他們與惡人一同滅亡。義人會<b>發出白光</b>，頭上有<b>倒數圈</b>：及時切換「天使救援」點他 <b>+300</b>；倒數歸零或被天災波及 <b>-300</b>。義人剛出現時有 2.5 秒護盾，而且救援時限會一位比一位短！<br>
       <b>計分：</b>人 +10、騎驢 +15、驢車 +20、戰車 +25、黃金馬車 +50
@@ -157,7 +157,7 @@ h2{margin:0 0 6px;font-size:28px}
 <div class="overlay hide" id="pauseMenu">
   <div class="panel">
     <h2>⏸ 暫停中</h2>
-    <p class="sub">天神也需要喝杯茶</p>
+    <p class="sub">全知全能的神，當然也能暫停時間。</p>
     <div class="btns" style="flex-direction:column">
       <button class="btn pri" id="resumeBtn">繼續遊戲</button>
       <button class="btn sec" id="finishBtn">結束這局，看結算</button>
@@ -242,16 +242,16 @@ const HAIRS = ['#2b2b2b', '#4a3222', '#6b4423', '#1c1c1c', '#c98d4b', '#8a8a8a']
 const SKINS = ['#ffd8b5', '#f5c79e', '#e0ac7e', '#c68b59'];
 const ROOFS = ['#f2b5a0', '#f7d794', '#b8d8e8', '#d6c1e8', '#f5c6d6', '#c9e4b4', '#e8e2d0', '#ffd8a8', '#a8c8f0', '#e0e0e0'];
 
-/* ---------- 索多瑪模式（早期迦南／黎凡特 青銅時代）設定 ---------- */
-const SODOM_TIME = 90;          // 索多瑪模式秒數
+/* ---------- 所多瑪模式（早期迦南／黎凡特 青銅時代）設定 ---------- */
+const SODOM_TIME = 90;          // 所多瑪模式秒數
 const RESCUE_SCORE = 300;       // 救出／失去義人的分數
 const DIS_S = {
   bolt:    { name: '鹽柱',     icon: '🧂', cd: 0,   r: 26, desc: '無冷卻・化為鹽柱' },
-  meteor:  { name: '天火',     icon: '🔥', cd: 4.5, r: 95, desc: '硫磺火雨' },
-  tornado: { name: '忌邪之眼', icon: '👁️', cd: 6,   r: 46, desc: '使人瘋狂' },
+  meteor:  { name: '天火',     icon: '🔥', cd: 4.5, r: 120, desc: '硫磺火雨' },
+  tornado: { name: '忌邪之眼', icon: '👁️', cd: 6,   r: 53, desc: '使人瘋狂' },
   ghost:   { name: '天使救援', icon: '😇', cd: 1.2, r: 60, desc: '接走義人' },
 };
-const isSodom = () => !!G && (G.mode === 'sodom' || G.mode === 'sodompop'); // 索多瑪主題（限時或人口爆炸）
+const isSodom = () => !!G && (G.mode === 'sodom' || G.mode === 'sodompop'); // 所多瑪主題（限時或人口爆炸）
 const isPop = () => !!G && (G.mode === 'pop' || G.mode === 'sodompop');     // 人口爆炸規則
 const dis = () => isSodom() ? DIS_S : DIS;
 const CAR_POOL = { modern: ['scooter', 'car', 'taxi', 'bus'], sodom: ['donkey', 'cart', 'chariot', 'gold'] };
@@ -351,12 +351,70 @@ function sfx(k) {
 }
 let lastFb = 0;
 
-/* ---------- 索多瑪背景音樂：低沉持續音＋沙漠風聲＋稀疏的撥弦聲（全部即時合成） ---------- */
+/* ---------- 所多瑪背景音樂：低沉持續音＋沙漠風聲＋稀疏的撥弦聲（全部即時合成） ---------- */
 let bgm = null;
 function startBGM() {
   stopBGM();
-  if (muted || !isSodom()) return;
+  if (muted || !G || G.mode === 'demo') return;
   const a = audio(); if (!a) return;
+  bgm = isSodom() ? sodomBGM(a) : modernBGM(a);
+}
+/* ---------- 現代模式背景音樂：A 小調、每分鐘 116 拍的電子節奏（大鼓、小鼓、低音、琶音） ---------- */
+function modernBGM(a) {
+  const t0 = a.currentTime, out = a.createGain();
+  out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(0.9, t0 + 1.5); out.connect(MG);
+  const step = 60 / 116 / 2; // 八分音符
+  // 和弦進行：Am → F → C → G（每小節一個和弦）
+  const chords = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]];
+  const roots = [55, 43.65, 65.41, 49];
+  const arpOrder = [0, 1, 2, 1, 0, 1, 2, 1];
+  let next = t0 + 0.1, n = 0;
+  const timer = setInterval(() => {
+    if (!AC) return;
+    while (next < AC.currentTime + 0.3) {
+      const bar = Math.floor(n / 8) % 4, st = n % 8, loop = Math.floor(n / 32);
+      if (st === 0 || st === 4 || (st === 7 && loop % 2)) mKick(next, out);
+      if (st === 2 || st === 6) mSnare(next, out);
+      if (st % 2 === 1 || loop > 0) mHat(next, out, st % 2 ? 0.05 : 0.025);
+      mBass(roots[bar] * (st === 3 || st === 7 ? 2 : 1), next, step * 0.9, out);
+      if (n >= 16) mArp(chords[bar][arpOrder[st]] * (loop % 2 && st >= 4 ? 2 : 1), next, out); // 前兩小節只有節奏，之後加入琶音
+      next += step; n++;
+    }
+  }, 100);
+  return { out, nodes: [], timer };
+}
+function mKick(t, out) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.18);
+  g.gain.setValueAtTime(0.32, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.32);
+}
+function mSnare(t, out) {
+  const src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  src.buffer = noiseBuf; f.type = 'bandpass'; f.frequency.value = 1800; f.Q.value = 0.8;
+  g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+  src.connect(f); f.connect(g); g.connect(out); src.start(t, Math.random() * 0.5); src.stop(t + 0.18);
+}
+function mHat(t, out, v) {
+  const src = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  src.buffer = noiseBuf; f.type = 'highpass'; f.frequency.value = 7000;
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+  src.connect(f); f.connect(g); g.connect(out); src.start(t, Math.random() * 0.5); src.stop(t + 0.06);
+}
+function mBass(f, t, d, out) {
+  const o = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain();
+  o.type = 'sawtooth'; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.setValueAtTime(700, t); lp.frequency.exponentialRampToValueAtTime(180, t + d);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.1, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.02);
+}
+function mArp(f, t, out) {
+  const o = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain();
+  o.type = 'square'; o.frequency.value = f * 2; lp.type = 'lowpass'; lp.frequency.value = 2200;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.03, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+  o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + 0.25);
+}
+/* ---------- 所多瑪背景音樂 ---------- */
+function sodomBGM(a) {
   const t0 = a.currentTime, out = a.createGain();
   out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(1.1, t0 + 2.5); out.connect(MG);
   const nodes = [];
@@ -380,7 +438,7 @@ function startBGM() {
       next += pick([0.6, 0.6, 0.9, 1.2, 1.8, 2.4]);
     }
   }, 200);
-  bgm = { out, nodes, timer };
+  return { out, nodes, timer };
 }
 function pluck(f, t, out) {
   const a = AC, o = a.createOscillator(), o2 = a.createOscillator(), lp = a.createBiquadFilter(), g = a.createGain();
@@ -548,7 +606,7 @@ function renderBG() {
   }
 }
 
-/* ---------- 索多瑪城的背景：沙地、泥土街道、泥磚屋、梯形巨塔、綠洲、城牆 ---------- */
+/* ---------- 所多瑪城的背景：沙地、泥土街道、泥磚屋、梯形巨塔、綠洲、城牆 ---------- */
 function renderSodomBG(g) {
   const { vr, hr, blocks } = city;
   g.fillStyle = '#e6c992'; g.fillRect(0, 0, W, H);
@@ -776,14 +834,14 @@ function updatePerson(p, dt) {
 /* ---------- 惡靈附身 ---------- */
 function updatePossessed(p, dt) {
   p.pt += dt;
-  const mad = p.state === 'mad'; // 瘋狂者會攻擊任何罪人（包括其他瘋狂者），但不會攻擊義人
+  const mad = p.state === 'mad'; // 瘋狂者只攻擊還沒發瘋的罪人：不攻擊其他瘋狂者，也不攻擊義人
   let best = null, bd = 1e12;
   for (const o of G.people) {
     if (o === p || o.dead) continue;
-    if (mad ? (o.righteous || o.state === 'rescue') : o.state === 'possessed') continue;
+    if (mad ? (o.righteous || o.state !== 'walk') : o.state === 'possessed') continue;
     const dd = d2(p.x, p.y, o.x, o.y); if (dd < bd) { bd = dd; best = o; }
   }
-  const sp = mad ? 82 : 105;
+  const sp = mad ? 120 : 105; // 瘋狂者跑得比平常快很多
   if (best) {
     const d = Math.sqrt(bd);
     if (d < 11) {
@@ -1013,7 +1071,7 @@ function updateTornado(t, dt) {
   else if (Math.random() < dt * 25) G.fx.push({ k: 'smoke', x: t.x + rand(-20, 20), y: t.y + rand(-6, 10), vx: rand(-40, 40), vy: rand(-10, 10), r: rand(5, 10), t: 0, life: 0.7 });
 }
 
-/* ---------- 索多瑪模式的四種天災 ---------- */
+/* ---------- 所多瑪模式的四種天災 ---------- */
 function useSodom(k, x, y) {
   if (k === 'bolt') { // 鹽柱：範圍內的人與馬車化為鹽柱
     G.fx.push({ k: 'saltbeam', x, y, t: 0, life: 0.6 });
@@ -1023,12 +1081,12 @@ function useSodom(k, x, y) {
     killArea(x, y, DIS_S.bolt.r, 'salt');
   } else if (k === 'meteor') { // 天火：一陣硫磺火球散彈落下，留下熔岩
     G.fx.push({ k: 'zone', x, y, r: DIS_S.meteor.r, t: 0, life: 1.4 });
-    const grp = { x, y, n: 0, left: 13 }; // 13 顆火球合計算一次連殺
-    for (let i = 0; i < 13; i++) {
-      const a = rand(0, 7), d = Math.sqrt(Math.random()) * DIS_S.meteor.r * 0.85;
-      const tx = x + Math.cos(a) * d, ty = y + Math.sin(a) * d;
-      G.meteors.push({ x: tx, y: ty, t: -(i * 0.07 + rand(0, 0.12)), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true, grp });
+    const pts = firePattern(x, y, DIS_S.meteor.r);
+    const grp = { x, y, n: 0, left: pts.length }; // 整陣火雨合計算一次連殺
+    for (const [tx, ty] of pts) {
+      G.meteors.push({ x: tx, y: ty, t: -rand(0, 1), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true, grp });
     }
+    G.decals.push({ k: 'scorch', x, y, r: DIS_S.meteor.r + 12, t: 0, life: 14, c: '50,25,10' });
     sfx('fire');
   } else if (k === 'tornado') { // 忌邪之眼
     G.tornados.push({ x, y, ang: rand(0, 7), t: 0, life: 5.5, spin: 0, nextAlarm: 0, eye: true });
@@ -1044,16 +1102,28 @@ function useSodom(k, x, y) {
   }
   return true;
 }
+// 天火落點：蜂巢狀排列（間距 < 熔岩有效半徑 × √3），保證整個範圍被熔岩填滿、沒有空隙
+const FIRE_GAP = 42, FIRE_HIT = 30, LAVA_R = 32;
+function firePattern(x, y, R) {
+  const pts = [], rot = rand(0, Math.PI), c = Math.cos(rot), s = Math.sin(rot), rows = Math.ceil(R / (FIRE_GAP * 0.866)) + 1;
+  for (let j = -rows; j <= rows; j++) for (let i = -rows - 1; i <= rows + 1; i++) {
+    let px = (i + (j & 1) * 0.5) * FIRE_GAP, py = j * FIRE_GAP * 0.866;
+    let d = Math.hypot(px, py);
+    if (d > R + FIRE_GAP * 0.5) continue;
+    if (d > R) { px *= R / d; py *= R / d; } // 外圈的點收進邊界，讓邊緣也被填滿
+    pts.push([x + px * c - py * s + rand(-2, 2), y + px * s + py * c + rand(-2, 2)]);
+  }
+  return pts;
+}
 function fireImpact(m) {
   const { x, y } = m;
   G.fx.push({ k: 'ring', x, y, r0: 6, r1: 44, t: 0, life: 0.35, c: '255,170,40' });
-  for (let i = 0; i < 10; i++) { const a = rand(0, 7), s = rand(50, 160); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(2, 5), c: pick(['#ff4d00', '#ffa940', '#ffd666', '#fff566']), t: 0, life: rand(0.3, 0.6), drag: 2.5 }); }
-  G.lava.push({ x, y, r: rand(26, 34), t: 0, life: 6 });
-  if (G.lava.length > 80) G.lava.shift();
-  G.decals.push({ k: 'scorch', x, y, r: 36, t: 0, life: 14, c: '50,25,10' });
+  for (let i = 0; i < 6; i++) { const a = rand(0, 7), s = rand(50, 160); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(2, 5), c: pick(['#ff4d00', '#ffa940', '#ffd666', '#fff566']), t: 0, life: rand(0.3, 0.6), drag: 2.5 }); }
+  G.lava.push({ x, y, r: LAVA_R, t: 0, life: 6 });
+  if (G.lava.length > 180) G.lava.shift();
   G.shake = Math.max(G.shake, 0.35);
   sfx('fboom');
-  const g = m.grp; g.n += killArea(x, y, 30, 'burn', true);
+  const g = m.grp; g.n += killArea(x, y, FIRE_HIT, 'burn', true);
   if (--g.left === 0) combo(g.n, g.x, g.y);
 }
 function madBoom(x, y) {
@@ -1089,7 +1159,7 @@ function updateSodom(dt) {
       p.gone = true; G.lost++; G.score -= RESCUE_SCORE;
       G.fx.push({ k: 'soul', x: p.x, y: p.y - 2, t: 0, life: 1.6, sway: 0 });
       floater(p.x, p.y - 14, '來不及了… -' + RESCUE_SCORE, '#ff4d4f', 18);
-      toast('💔 太晚了，義人沒能逃出索多瑪…'); sfx('fail');
+      toast('💔 太晚了，義人沒能逃出所多瑪…'); sfx('fail');
     }
   }
   // 熔岩：持續燒灼踏入的人車
@@ -1152,7 +1222,7 @@ function update(dt) {
   if (G.tutorial) return; // 新手教學期間不會結束遊戲
   if (G.mode === 'timed' && G.t >= TIME_LIMIT) endGame('時間到！');
   if (isPop() && G.people.length + G.cars.length >= POP_LIMIT) endGame(isSodom() ? '罪惡之城擠爆了！' : '人口爆炸了！');
-  if (G.mode === 'sodom' && G.t >= SODOM_TIME) endGame('索多瑪已成焦土');
+  if (G.mode === 'sodom' && G.t >= SODOM_TIME) endGame('所多瑪已成焦土');
 }
 
 /* =========================================================
@@ -1609,7 +1679,7 @@ function startGame(mode, noTut) {
   lastHud = '';
   buildBar();
   selectDis(G.sel);
-  if (sodomTheme) startBGM(); else stopBGM();
+  if (mode !== 'demo') startBGM(); else stopBGM();
   showOnly(mode === 'demo' ? 'menu' : null);
   $('#pauseBtn').textContent = '⏸';
   if (!noTut && mode !== 'demo' && needTutorial(mode)) startTutorial(mode);
@@ -1664,18 +1734,18 @@ function needTutorial(mode) {
 }
 function sodomSteps(pop) {
   return [
-    { need: 'next', text: '很久很久以前，約旦河平原上有一座繁華的城——<b>索多瑪</b>。<br>城裡金碧輝煌、富足安逸，人們卻驕傲奢華、欺壓窮困，罪惡的聲音直達天上。<br>神終於決定：<b>降下審判，毀滅這座城。</b>' },
+    { need: 'next', text: '很久很久以前，約旦河平原上有一座繁華的城——<b>所多瑪</b>。<br>城裡金碧輝煌、富足安逸，人們卻驕傲奢華、欺壓窮困，罪惡的聲音直達天上。<br>神終於決定：<b>降下審判，毀滅這座城。</b>' },
     { need: 'select', k: 'bolt', hl: 'bolt', enter: () => selectDis('meteor'), text: '第一種天災：<b>🧂 鹽柱</b>。<br>《創世記》記載，羅得的妻子回頭一望，就變成了一根鹽柱。', goal: '👇 點選畫面下方的「鹽柱」' },
     { need: 'cast', k: 'bolt', count: 3, hl: 'bolt', text: '鹽柱<b>沒有冷卻時間</b>，想點就點！<br>點擊城裡的人或馬車，把他們化為鹽柱。', goal: '👆 點擊城市 3 次（{n} / 3）' },
     { need: 'select', k: 'meteor', hl: 'meteor', text: '第二種天災：<b>🔥 天火</b>。<br>聖經記載，神從天上降下<b>硫磺與火</b>。', goal: '👇 點選「天火」' },
     { need: 'cast', k: 'meteor', hl: 'meteor', delay: 2200, text: '天火會降下一陣硫磺火雨，落地處變成<b>熔岩</b>，持續燒灼約 6 秒。<br>它有冷卻時間，所以要<b>瞄準人多的地方</b>：一次燒掉越多人，連殺加分越多！', goal: '👆 對著人群降下天火' },
     { need: 'select', k: 'tornado', hl: 'tornado', text: '第三種天災：<b>👁️ 忌邪之眼</b>。<br>神的視線會在城中游移，罪人無所遁形。', goal: '👇 點選「忌邪之眼」' },
-    { need: 'cast', k: 'tornado', hl: 'tornado', delay: 3000, text: '被神看見的罪人會<b>失去理智</b>（頭上出現 @），開始互相攻擊，最後自爆。', goal: '👆 點擊城市，降下忌邪之眼' },
+    { need: 'cast', k: 'tornado', hl: 'tornado', delay: 3000, text: '被神看見的罪人會<b>失去理智</b>（頭上出現 @），飛快地衝向身邊還正常的人攻擊，最後自爆。', goal: '👆 點擊城市，降下忌邪之眼' },
     { need: 'next', text: '但是，即使是這樣的罪惡之城，城裡仍有少數心地善良的<b>「義人」</b>。<br>神不願義人和惡人一同滅亡，於是<b>差派天使去拯救他們</b>。' },
     { need: 'select', k: 'ghost', hl: 'ghost', arrow: true, enter: () => spawnRighteous(20, true), text: '看！那位<b>發著白光</b>的人就是義人，頭上的圈是剩下的時間。<br>義人出現時，「天使救援」按鈕也會發光提醒你。', goal: '👇 點選「天使救援」' },
     { need: 'rescue', hl: 'ghost', arrow: true, delay: 1900, text: '點擊義人，讓天使把他接走！', goal: '👆 點擊發白光的義人' },
     { need: 'next', text: '做得好！救出義人 <b>+300</b>。<br>但要小心：倒數歸零、或是被你的天災波及，都會 <b>-300</b>。義人剛出現時有短暫護盾，而且<b>救援時限會一位比一位短</b>——鹽柱別亂點喔！' },
-    { need: 'next', btn: '開始遊戲 ▶', text: pop ? '教學結束！<b>索多瑪・人口爆炸</b>：罪人會越聚越多，城裡超過 <b>150</b> 個人車就輸。撐得越久、分數越高！' : '教學結束！<b>索多瑪・限時</b>：<b>90 秒</b>內拿到最高分，也別忘了拯救義人。審判，開始！' },
+    { need: 'next', btn: '開始遊戲 ▶', text: pop ? '教學結束！<b>所多瑪・人口爆炸</b>：罪人會越聚越多，城裡超過 <b>150</b> 個人車就輸。撐得越久、分數越高！' : '教學結束！<b>所多瑪・限時</b>：<b>90 秒</b>內拿到最高分，也別忘了拯救義人。審判，開始！' },
   ];
 }
 function modernSteps(pop) {
