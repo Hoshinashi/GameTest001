@@ -58,6 +58,7 @@ h2{margin:0 0 6px;font-size:28px}
 .m-endless{background:linear-gradient(135deg,#36cfc9,#1890ff)}
 .m-pop{background:linear-gradient(135deg,#9254de,#c41d7f)}
 .m-sodom{background:linear-gradient(135deg,#d4a017,#8b4513)}
+.m-sodompop{background:linear-gradient(135deg,#b5651d,#5c2a0e)}
 .dis.alert{animation:holy .5s infinite alternate;border-color:#fffbe6}
 @keyframes holy{from{background:#33456b;box-shadow:0 0 0 0 rgba(255,251,230,.0)}to{background:#8a7a3a;box-shadow:0 0 18px 4px rgba(255,251,230,.9)}}
 .how{margin-top:16px;text-align:left;font-size:13px;color:var(--muted);background:#f5f7fb;border-radius:14px;padding:10px 14px;line-height:1.7}
@@ -104,19 +105,21 @@ h2{margin:0 0 6px;font-size:28px}
     <h1>天災降臨</h1>
     <p class="sub">化身任性的天神，用天災把城市搞得雞飛狗跳！</p>
     <div class="modes">
-      <button class="mode m-timed" data-mode="timed"><span class="em">⏱️</span><div><b>限時 60 秒</b><span>時間內拿到最高分</span></div><div class="best" data-best="timed"></div></button>
-      <button class="mode m-endless" data-mode="endless"><span class="em">♾️</span><div><b>無限模式</b><span>沒有時間限制，玩到開心為止</span></div><div class="best" data-best="endless"></div></button>
-      <button class="mode m-pop" data-mode="pop"><span class="em">🏙️</span><div><b>人口爆炸</b><span>人越來越多，城市擠爆就輸了</span></div><div class="best" data-best="pop"></div></button>
-      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>索多瑪模式</b><span>限時 90 秒・降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
+      <button class="mode m-sodom" data-mode="sodom"><span class="em">📜</span><div><b>索多瑪・限時</b><span>90 秒內降下硫磺與火，別忘了救出義人</span></div><div class="best" data-best="sodom"></div></button>
+      <button class="mode m-sodompop" data-mode="sodompop"><span class="em">🏛️</span><div><b>索多瑪・人口爆炸</b><span>罪人越聚越多，城擠爆就輸；義人仍會出現</span></div><div class="best" data-best="sodompop"></div></button>
+      <button class="mode m-timed" data-mode="timed"><span class="em">⏱️</span><div><b>現代・限時</b><span>60 秒內拿到最高分</span></div><div class="best" data-best="timed"></div></button>
+      <button class="mode m-pop" data-mode="pop"><span class="em">🏙️</span><div><b>現代・人口爆炸</b><span>人越來越多，城市擠爆就輸了</span></div><div class="best" data-best="pop"></div></button>
     </div>
     <div class="how">
       <b>玩法：</b>① 從畫面下方選一種天災 ② 點擊城市降下天災<br>
+      <b>規則：</b>「限時」比誰在時間內分數高；「人口爆炸」人會越生越快，城裡超過 150 個人車就輸<br>
       <b>計分：</b>人類 +10、機車 +15、汽車 +20、計程車 +25、公車 +50，一次擊中 3 個以上有連殺加分！<br>
+      <b>現代城市的天災：</b><br>
       ⚡ <b>閃電</b>：瞬間命中、範圍小、冷卻快<br>
       ☄️ <b>隕石</b>：延遲落下、超大範圍<br>
       🌪️ <b>龍捲風</b>：會自己移動，把沿路的東西捲走<br>
       👻 <b>惡靈附身</b>：點一個人讓他發狂追殺別人，殺滿 5 人就自爆！<br>
-      📜 <b>索多瑪模式</b>：用鹽柱、天火、忌邪之眼毀滅罪惡之城；發著白光的<b>義人</b>出現時，要切換「天使救援」點他接走（+300），太晚或誤傷義人 -300！<br>
+      📜 <b>索多瑪</b>：用鹽柱、天火、忌邪之眼毀滅罪惡之城；發著白光的<b>義人</b>出現時，要切換「天使救援」點他接走（+300），太晚或誤傷義人 -300！<br>
       <span style="opacity:.8">電腦可用數字鍵 1～4 快速切換天災</span>
     </div>
   </div>
@@ -216,7 +219,9 @@ const DIS_S = {
   tornado: { name: '忌邪之眼', icon: '👁️', cd: 6,   r: 46, desc: '使人瘋狂' },
   ghost:   { name: '天使救援', icon: '😇', cd: 1.2, r: 60, desc: '接走義人' },
 };
-const dis = () => (G && G.mode === 'sodom') ? DIS_S : DIS;
+const isSodom = () => !!G && (G.mode === 'sodom' || G.mode === 'sodompop'); // 索多瑪主題（限時或人口爆炸）
+const isPop = () => !!G && (G.mode === 'pop' || G.mode === 'sodompop');     // 人口爆炸規則
+const dis = () => isSodom() ? DIS_S : DIS;
 const CAR_POOL = { modern: ['scooter', 'car', 'taxi', 'bus'], sodom: ['donkey', 'cart', 'chariot', 'gold'] };
 Object.assign(CARS, {
   donkey:  { len: 20, wid: 9,  spd: [45, 60],  pts: 15, w: 3 },   // 騎驢
@@ -232,33 +237,55 @@ const GOLD = '#f5c542';
 /* =========================================================
    音效（用程式即時合成，不需要外部檔案）
    ========================================================= */
-let AC = null, noiseBuf = null, muted = false, lastPop = 0;
+let AC = null, MG = null, noiseBuf = null, muted = false, lastPop = 0, silentEl = null;
+// 取得音訊引擎。第一次建立一定要發生在玩家點擊之後（瀏覽器規定），所以只在點擊時呼叫 unlockAudio 建立
 function audio() {
+  if (!AC) return null;
+  if (AC.state !== 'running') { try { const r = AC.resume(); if (r && r.catch) r.catch(() => {}); } catch (e) {} }
+  return AC;
+}
+function unlockAudio() {
   if (!AC) {
     try {
       AC = new (window.AudioContext || window.webkitAudioContext)();
+      MG = AC.createGain(); MG.gain.value = 1; MG.connect(AC.destination); // 總音量：所有聲音都經過這裡
       noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
       const d = noiseBuf.getChannelData(0);
       for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    } catch (e) { AC = null; }
+    } catch (e) { AC = null; console.warn('無法啟動音效', e); return; }
   }
-  if (AC && AC.state === 'suspended') AC.resume();
-  return AC;
+  audio();
+  // 播放一小段無聲訊號，讓 Safari／iPhone 真正開啟聲音
+  try { const b = AC.createBuffer(1, 1, 22050), s = AC.createBufferSource(); s.buffer = b; s.connect(AC.destination); s.start(0); } catch (e) {}
+  // iPhone：讓靜音開關打開時也能聽到遊戲聲音（較新的 Safari 支援）
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+  if (!silentEl && !navigator.audioSession) { // 舊版 iPhone 的替代做法：播一段極短的無聲音檔
+    try { silentEl = new Audio(silentWavURL()); silentEl.setAttribute('playsinline', ''); const r = silentEl.play(); if (r && r.catch) r.catch(() => {}); } catch (e) {}
+  }
 }
+function silentWavURL() {
+  const n = 800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 8000, true); v.setUint32(28, 16000, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+['pointerdown', 'touchend', 'click', 'keydown'].forEach(ev => document.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
 function noise(dur, type, freq, vol, attack) {
   const a = audio(); if (!a) return;
   const t = a.currentTime, src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
   src.buffer = noiseBuf; src.loop = true; f.type = type; f.frequency.value = freq;
   g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + (attack || 0.01));
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  src.connect(f); f.connect(g); g.connect(a.destination); src.start(t); src.stop(t + dur + 0.05);
+  src.connect(f); f.connect(g); g.connect(MG); src.start(t); src.stop(t + dur + 0.05);
 }
 function tone(f1, f2, dur, type, vol) {
   const a = audio(); if (!a) return;
   const t = a.currentTime, o = a.createOscillator(), g = a.createGain();
   o.type = type; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + dur);
   g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+  o.connect(g); g.connect(MG); o.start(t); o.stop(t + dur + 0.05);
 }
 function sfx(k) {
   if (muted || !G || G.mode === 'demo') return;
@@ -285,7 +312,7 @@ function sfx(k) {
     else if (k === 'chime') { tone(1318.5, 1320, 0.8, 'sine', 0.08); tone(1760, 1762, 0.8, 'sine', 0.05); }
     else if (k === 'fail') { tone(400, 180, 0.6, 'triangle', 0.12); }
     else if (k === 'madboom') { noise(0.5, 'lowpass', 900, 0.45); tone(220, 50, 0.4, 'square', 0.08); }
-  } catch (e) {}
+  } catch (e) { console.warn('音效錯誤', k, e); }
 }
 let lastFb = 0;
 
@@ -293,10 +320,10 @@ let lastFb = 0;
 let bgm = null;
 function startBGM() {
   stopBGM();
-  if (muted || !G || G.mode !== 'sodom') return;
+  if (muted || !isSodom()) return;
   const a = audio(); if (!a) return;
   const t0 = a.currentTime, out = a.createGain();
-  out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(0.55, t0 + 2.5); out.connect(a.destination);
+  out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(1.1, t0 + 2.5); out.connect(MG);
   const nodes = [];
   [[73.42, 'sawtooth', 0.03], [73.8, 'sawtooth', 0.03], [110, 'triangle', 0.05], [146.83, 'sine', 0.025]].forEach(([f, type, v]) => {
     const o = a.createOscillator(), lp = a.createBiquadFilter(), g = a.createGain();
@@ -650,7 +677,7 @@ const area = () => W * H / 640000;
 /* ---------- 行人 ---------- */
 function newPerson(edge, righteous) {
   const nx = city.xs.length, ny = city.ys.length;
-  const sod = G.mode === 'sodom';
+  const sod = isSodom();
   const p = {
     righteous: !!righteous,
     spd: rand(26, 40), shirt: sod ? (Math.random() < 0.35 ? pick(RICH) : pick(ROBES)) : pick(SHIRTS),
@@ -682,7 +709,7 @@ function nextNode(p) {
   const nx = city.xs.length, ny = city.ys.length;
   let opts = [[p.ci + 1, p.cj], [p.ci - 1, p.cj], [p.ci, p.cj + 1], [p.ci, p.cj - 1]]
     .filter(([i, j]) => i >= 0 && j >= 0 && i < nx && j < ny);
-  if (G.mode === 'pop' || p.righteous) opts = opts.filter(([i, j]) => !isEdge(i, j));
+  if (isPop() || p.righteous) opts = opts.filter(([i, j]) => !isEdge(i, j));
   else if (Math.random() < 0.7) { const o = opts.filter(([i, j]) => !isEdge(i, j)); if (o.length) opts = o; }
   const o2 = opts.filter(([i, j]) => !(i === p.pi && j === p.pj));
   if (o2.length) opts = o2;
@@ -704,7 +731,7 @@ function updatePerson(p, dt) {
   p.ph += sp * dt * 0.28;
   if (d <= sp * dt) {
     p.x = tx; p.y = ty; p.ci = p.ti; p.cj = p.tj;
-    if (isEdge(p.ci, p.cj) && G.mode !== 'pop' && !p.righteous) { p.gone = true; return; }
+    if (isEdge(p.ci, p.cj) && !isPop() && !p.righteous) { p.gone = true; return; }
     nextNode(p);
   } else {
     p.x += dx / d * sp * dt; p.y += dy / d * sp * dt; p.ang = Math.atan2(dy, dx);
@@ -752,7 +779,7 @@ function possessedBoom(p) {
 
 /* ---------- 車輛 ---------- */
 function newCar(randomPos) {
-  const pool = CAR_POOL[G.mode === 'sodom' ? 'sodom' : 'modern'];
+  const pool = CAR_POOL[isSodom() ? 'sodom' : 'modern'];
   const tot = pool.reduce((s, k) => s + CARS[k].w, 0);
   let r = Math.random() * tot, kind = pool[0];
   for (const k of pool) { r -= CARS[k].w; if (r <= 0) { kind = k; break; } }
@@ -772,7 +799,7 @@ function newCar(randomPos) {
   c.ang = Math.atan2(c.dy, c.dx);
   c.color = kind === 'taxi' ? '#f7c600' : kind === 'bus' ? pick(['#2e86de', '#27ae60', '#e17055']) : pick(CAR_COLORS);
   c.helmet = pick(['#ff6b6b', '#ffffff', '#fcc419', '#4dabf7', '#222']);
-  if (G.mode === 'sodom') {
+  if (isSodom()) {
     c.helmet = pick(RICH.concat(ROBES));
     c.horse = pick(['#8b5a2b', '#5c3a1e', '#d9c3a0', '#3b2a1a']);
     c.color = kind === 'gold' ? '#e8b923' : kind === 'donkey' ? pick(['#8d7b68', '#9e9182', '#6f6253']) : '#9c6b3c';
@@ -871,7 +898,7 @@ function alarm(x, y, r) {
 function useDisaster(k, x, y) {
   if (!G || G.over || G.paused || G.mode === 'demo') return;
   if (G.cd[k] > 0) { toast(dis()[k].icon + ' ' + dis()[k].name + '還在冷卻中…'); return; }
-  if (G.mode === 'sodom') { if (useSodom(k, x, y)) G.cd[k] = DIS_S[k].cd; return; }
+  if (isSodom()) { if (useSodom(k, x, y)) G.cd[k] = DIS_S[k].cd; return; }
   if (k === 'bolt') {
     const pts = []; let px = x + rand(-70, 70), py = y - 320;
     const n = 9;
@@ -999,7 +1026,7 @@ function madBoom(x, y) {
 function updateSodom(dt) {
   // 義人出現：救援時限一位比一位短（12 秒起，每位少 1.5 秒，最低 5 秒）
   G.nextR -= dt;
-  if (G.nextR <= 0 && G.t < SODOM_TIME - 5) {
+  if (G.nextR <= 0 && (G.mode === 'sodompop' || G.t < SODOM_TIME - 5)) {
     const p = newPerson(false, true);
     p.inv = 2.5; p.shirt = '#fbfbf5'; p.cloth = '#ffffff'; p.gold = false; p.born = 0;
     p.rt = p.rmax = Math.max(5, 12 - G.rCount * 1.5); G.rCount++;
@@ -1037,7 +1064,7 @@ function updateSodom(dt) {
 
 /* ---------- 每一幀的更新 ---------- */
 function spawn(dt) {
-  if (G.mode === 'pop') {
+  if (isPop()) {
     const rateP = 1.1 + G.t * 0.035, rateC = 0.45 + G.t * 0.006;
     G.spawnP -= dt; while (G.spawnP <= 0) { G.people.push(newPerson(Math.random() < 0.5)); G.spawnP += 1 / rateP; }
     G.spawnC -= dt; while (G.spawnC <= 0) { const c = newCar(false); if (c) G.cars.push(c); G.spawnC += 1 / rateC; }
@@ -1061,7 +1088,7 @@ function update(dt) {
     else if (f.k === 'fling') { f.x += f.vx * dt; f.y += f.vy * dt; f.rot += f.spin * dt; }
     else if (f.k === 'angel' && f.t >= 0.6 && !f.picked) { f.picked = true; f.p.gone = true; }
   }
-  if (G.mode === 'sodom') updateSodom(dt);
+  if (isSodom()) updateSodom(dt);
   for (const w of G.wrecks) { w.t += dt; if (w.t < w.life - 1.5 && Math.random() < dt * 4) G.fx.push({ k: 'smoke', x: w.x + rand(-5, 5), y: w.y, vx: rand(-8, 8), vy: rand(-25, -12), r: rand(4, 7), t: 0, life: 1.2 }); }
   for (const f of G.floaters) f.t += dt;
   for (const d of G.decals) d.t += dt;
@@ -1076,7 +1103,7 @@ function update(dt) {
   G.shake = Math.max(0, G.shake - dt * 2.5);
   G.flash = Math.max(0, G.flash - dt * 1.4);
   if (G.mode === 'timed' && G.t >= TIME_LIMIT) endGame('時間到！');
-  if (G.mode === 'pop' && G.people.length + G.cars.length >= POP_LIMIT) endGame('人口爆炸了！');
+  if (isPop() && G.people.length + G.cars.length >= POP_LIMIT) endGame(isSodom() ? '罪惡之城擠爆了！' : '人口爆炸了！');
   if (G.mode === 'sodom' && G.t >= SODOM_TIME) endGame('索多瑪已成焦土');
 }
 
@@ -1418,7 +1445,7 @@ function draw() {
   // 全螢幕閃光、人口過多警示
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (G.flash > 0) { ctx.fillStyle = 'rgba(' + (G.flashC || '255,255,255') + ',' + Math.min(0.6, G.flash) + ')'; ctx.fillRect(0, 0, cv.width, cv.height); }
-  if (G.mode === 'pop') {
+  if (isPop()) {
     const r = (G.people.length + G.cars.length) / POP_LIMIT;
     if (r > 0.75) {
       const a = (r - 0.75) * 2.2 * (0.6 + 0.4 * Math.sin(G.t * 8));
@@ -1443,7 +1470,7 @@ function buildBar() { // 依照模式換成對應的天災按鈕
     bar.appendChild(b);
   });
 }
-function selectDis(k) { if (!G) return; G.sel = k; audio(); for (const b of bar.children) b.classList.toggle('sel', b.dataset.k === k); }
+function selectDis(k) { if (!G) return; G.sel = k; for (const b of bar.children) b.classList.toggle('sel', b.dataset.k === k); }
 let toastTimer = 0;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1500); }
 
@@ -1454,19 +1481,19 @@ function updateHud() {
   for (const b of bar.children) {
     const k = b.dataset.k, cd = G.cd[k];
     b.querySelector('.cdv').style.transform = 'scaleY(' + (cd / dis()[k].cd) + ')';
-    if (k === 'ghost') b.classList.toggle('alert', G.mode === 'sodom' && G.people.some(p => p.righteous && !p.dead && p.state !== 'rescue'));
+    if (k === 'ghost') b.classList.toggle('alert', isSodom() && G.people.some(p => p.righteous && !p.dead && p.state !== 'rescue'));
     b.querySelector('.cdt').textContent = cd > 0 ? cd.toFixed(1) : '';
   }
   const info = $('#info');
   let html, warn = false;
   if (G.mode === 'timed') { const left = Math.max(0, TIME_LIMIT - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒'; warn = left <= 10; }
   else if (G.mode === 'sodom') { const left = Math.max(0, SODOM_TIME - G.t); html = '⏱ ' + Math.ceil(left) + ' 秒　😇 ' + G.saved; warn = left <= 10; }
-  else if (G.mode === 'endless') html = '♾️ ' + fmtTime(G.t);
   else {
     const n = G.people.length + G.cars.length, r = n / POP_LIMIT;
     const col = r > 0.8 ? '#ff4d4f' : r > 0.55 ? '#faad14' : '#52c41a';
     html = '人口 <span class="popbar"><i style="width:' + Math.min(100, r * 100).toFixed(1) + '%;background:' + col + '"></i></span> ' + n + '/' + POP_LIMIT;
     warn = r > 0.85;
+    if (isSodom()) html += '　😇 ' + G.saved;
   }
   if (html !== lastHud) { info.innerHTML = html; lastHud = html; }
   info.classList.toggle('warn', warn);
@@ -1489,7 +1516,7 @@ function toWorld(e) {
   return { x: (e.clientX - r.left - view.ox) / view.s, y: (e.clientY - r.top - view.oy) / view.s };
 }
 cv.addEventListener('pointerdown', e => {
-  e.preventDefault(); audio();
+  e.preventDefault();
   const p = toWorld(e);
   if (p.x < 0 || p.y < 0 || p.x > W || p.y > H) return;
   useDisaster(G.sel, p.x, p.y);
@@ -1513,15 +1540,16 @@ function seed(nP, nC) {
   for (const p of G.people) p.born = 1;
 }
 function startGame(mode) {
-  chooseWorldSize(); genCity(mode === 'sodom' ? 'sodom' : 'modern');
+  chooseWorldSize(); const sodomTheme = mode === 'sodom' || mode === 'sodompop';
+  genCity(sodomTheme ? 'sodom' : 'modern');
   const prevSel = G && G.sel;
   G = newState(mode); if (prevSel) G.sel = prevSel;
   resize();
-  if (mode === 'pop') seed(40, 8); else seed(Math.round(40 * area()), Math.round(12 * area()));
+  if (mode === 'pop' || mode === 'sodompop') seed(40, 8); else seed(Math.round(40 * area()), Math.round(12 * area()));
   lastHud = '';
   buildBar();
   selectDis(G.sel);
-  if (mode === 'sodom') startBGM(); else stopBGM();
+  if (sodomTheme) startBGM(); else stopBGM();
   showOnly(mode === 'demo' ? 'menu' : null);
   $('#pauseBtn').textContent = '⏸';
 }
@@ -1533,7 +1561,7 @@ function endGame(title) {
   $('#stP').textContent = G.killsP; $('#stC').textContent = G.killsC; $('#stCombo').textContent = G.maxCombo;
   $('#stTime').textContent = fmtTime(G.t);
   stopBGM();
-  $('#stRBox').style.display = G.mode === 'sodom' ? '' : 'none';
+  $('#stRBox').style.display = isSodom() ? '' : 'none';
   $('#stR').textContent = G.saved + ' 位（失去 ' + G.lost + ' 位）';
   const key = 'best_' + G.mode, best = store.get(key);
   if (G.score > best) { store.set(key, G.score); $('#overRec').innerHTML = '<span class="newrec">🎉 新紀錄！</span>'; }
@@ -1546,7 +1574,7 @@ function togglePause() {
   showOnly(G.paused ? 'pauseMenu' : null);
   if (G.paused) stopBGM(); else startBGM();
 }
-document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => { audio(); startGame(b.dataset.mode); }));
+document.querySelectorAll('.mode').forEach(b => b.addEventListener('click', () => startGame(b.dataset.mode)));
 $('#pauseBtn').addEventListener('click', togglePause);
 $('#resumeBtn').addEventListener('click', togglePause);
 $('#finishBtn').addEventListener('click', () => { G.paused = false; showOnly(null); endGame('本局結束'); });
