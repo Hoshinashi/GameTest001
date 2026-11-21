@@ -359,29 +359,44 @@ function startBGM() {
   const a = audio(); if (!a) return;
   bgm = isSodom() ? sodomBGM(a) : modernBGM(a);
 }
-/* ---------- 現代模式背景音樂：A 小調、每分鐘 116 拍的電子節奏（大鼓、小鼓、低音、琶音） ---------- */
+/* ---------- 現代模式背景音樂：E 弗里吉亞調式、每分鐘 140 拍，末日感的電子節奏 ----------
+   ・大鼓每拍都打＋連續十六分音符低音：被追趕的壓迫感
+   ・Em → F 的半音摩擦、B 大三和弦的懸而未決：威脅與緊張
+   ・低沉地鳴＋空襲警報般的警笛：末日感
+   ・時間快到或人口快爆時，警笛變頻繁、鼓點加密 */
+function bgmHot() {
+  if (!G || G.tutorial) return false;
+  if (G.mode === 'timed') return TIME_LIMIT - G.t < 15;
+  if (isPop()) return (G.people.length + G.cars.length) / POP_LIMIT > 0.7;
+  return false;
+}
 function modernBGM(a) {
   const t0 = a.currentTime, out = a.createGain();
-  out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(0.9, t0 + 1.5); out.connect(MG);
-  const step = 60 / 116 / 2; // 八分音符
-  // 和弦進行：Am → F → C → G（每小節一個和弦）
-  const chords = [[220, 261.63, 329.63], [174.61, 220, 261.63], [261.63, 329.63, 392], [196, 246.94, 293.66]];
-  const roots = [55, 43.65, 65.41, 49];
-  const arpOrder = [0, 1, 2, 1, 0, 1, 2, 1];
+  out.gain.setValueAtTime(0.0001, t0); out.gain.linearRampToValueAtTime(0.9, t0 + 1.2); out.connect(MG);
+  // 地鳴：持續的低頻隆隆聲，強弱緩慢起伏
+  const rum = a.createBufferSource(), rlp = a.createBiquadFilter(), rg = a.createGain();
+  rum.buffer = noiseBuf; rum.loop = true; rlp.type = 'lowpass'; rlp.frequency.value = 140; rg.gain.value = 0.12;
+  rum.connect(rlp); rlp.connect(rg); rg.connect(out); rum.start();
+  const rl = a.createOscillator(), rlg = a.createGain(); rl.frequency.value = 0.15; rlg.gain.value = 0.07; rl.connect(rlg); rlg.connect(rg.gain); rl.start();
+  const step = 60 / 140 / 4; // 十六分音符
+  const roots = [41.2, 43.65, 41.2, 61.74];                       // E → F → E → B
+  const chords = [[164.81, 196, 246.94], [174.61, 220, 261.63], [164.81, 196, 246.94], [123.47, 155.56, 185]];
   let next = t0 + 0.1, n = 0;
   const timer = setInterval(() => {
     if (!AC) return;
-    while (next < AC.currentTime + 0.3) {
-      const bar = Math.floor(n / 8) % 4, st = n % 8, loop = Math.floor(n / 32);
-      if (st === 0 || st === 4 || (st === 7 && loop % 2)) mKick(next, out);
-      if (st === 2 || st === 6) mSnare(next, out);
-      if (st % 2 === 1 || loop > 0) mHat(next, out, st % 2 ? 0.05 : 0.025);
-      mBass(roots[bar] * (st === 3 || st === 7 ? 2 : 1), next, step * 0.9, out);
-      if (n >= 16) mArp(chords[bar][arpOrder[st]] * (loop % 2 && st >= 4 ? 2 : 1), next, out); // 前兩小節只有節奏，之後加入琶音
+    while (next < AC.currentTime + 0.25) {
+      const bar = Math.floor(n / 16) % 4, st = n % 16, loop = Math.floor(n / 64), hot = bgmHot();
+      if (st % 4 === 0 || (st === 14 && loop % 2)) mKick(next, out);
+      if (st === 4 || st === 12 || (hot && (st === 14 || st === 15))) mSnare(next, out);
+      if (loop > 0 || n >= 32) mHat(next, out, st % 4 === 2 ? 0.05 : 0.018);
+      mBass(roots[bar] * (st % 4 === 2 ? 2 : 1), next, step * 0.85, out);
+      if (n >= 32 && (st === 0 || st === 3 || st === 10)) mStab(chords[bar], next, out);
+      if (bar === 3 && st >= 12 && loop % 2 === 1) mTom(next, out, st - 12);
+      if (st === 0 && bar === 0 && n >= 64 && (hot || loop % 2 === 0)) mSiren(next, step * 64, out);
       next += step; n++;
     }
-  }, 100);
-  return { out, nodes: [], timer };
+  }, 80);
+  return { out, nodes: [rum, rl], timer };
 }
 function mKick(t, out) {
   const o = AC.createOscillator(), g = AC.createGain();
@@ -407,11 +422,28 @@ function mBass(f, t, d, out) {
   g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.1, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
   o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + d + 0.02);
 }
-function mArp(f, t, out) {
-  const o = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain();
-  o.type = 'square'; o.frequency.value = f * 2; lp.type = 'lowpass'; lp.frequency.value = 2200;
-  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.03, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
-  o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + 0.25);
+function mStab(ch, t, out) { // 和弦重擊：鋸齒波，短促
+  for (const f of ch) {
+    const o = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain();
+    o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = rand(-8, 8);
+    lp.type = 'lowpass'; lp.frequency.setValueAtTime(2600, t); lp.frequency.exponentialRampToValueAtTime(400, t + 0.2);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.028, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.connect(lp); lp.connect(g); g.connect(out); o.start(t); o.stop(t + 0.25);
+  }
+}
+function mTom(t, out, i) { // 過門鼓：音高一下一下往下掉
+  const o = AC.createOscillator(), g = AC.createGain(), f = 180 - i * 28;
+  o.type = 'sine'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.55, t + 0.18);
+  g.gain.setValueAtTime(0.22, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t + 0.25);
+}
+function mSiren(t, d, out) { // 空襲警報般的警笛：音高緩慢上下起伏
+  const o = AC.createOscillator(), bp = AC.createBiquadFilter(), g = AC.createGain(), l = AC.createOscillator(), lg = AC.createGain();
+  o.type = 'sawtooth'; o.frequency.value = 620; l.frequency.value = 0.22; lg.gain.value = 230;
+  l.connect(lg); lg.connect(o.frequency);
+  bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 1.2;
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.03, t + d * 0.3); g.gain.linearRampToValueAtTime(0.0001, t + d);
+  o.connect(bp); bp.connect(g); g.connect(out); o.start(t); l.start(t); o.stop(t + d + 0.05); l.stop(t + d + 0.05);
 }
 /* ---------- 所多瑪背景音樂 ---------- */
 function sodomBGM(a) {
@@ -1081,12 +1113,12 @@ function useSodom(k, x, y) {
     killArea(x, y, DIS_S.bolt.r, 'salt');
   } else if (k === 'meteor') { // 天火：一陣硫磺火球散彈落下，留下熔岩
     G.fx.push({ k: 'zone', x, y, r: DIS_S.meteor.r, t: 0, life: 1.4 });
-    const pts = firePattern(x, y, DIS_S.meteor.r);
-    const grp = { x, y, n: 0, left: pts.length }; // 整陣火雨合計算一次連殺
-    for (const [tx, ty] of pts) {
-      G.meteors.push({ x: tx, y: ty, t: -rand(0, 1), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true, grp });
+    const grp = { x, y, n: 0, left: FIRE_COUNT }; // 整陣火雨合計算一次連殺
+    for (let i = 0; i < FIRE_COUNT; i++) { // 隨機落點，不追求填滿
+      const a = rand(0, 7), d = Math.sqrt(Math.random()) * DIS_S.meteor.r * 0.85;
+      const tx = x + Math.cos(a) * d, ty = y + Math.sin(a) * d;
+      G.meteors.push({ x: tx, y: ty, t: -(i * 0.05 + rand(0, 0.12)), dur: 0.55, sx: tx + rand(120, 200), sy: ty - rand(300, 380), small: true, grp });
     }
-    G.decals.push({ k: 'scorch', x, y, r: DIS_S.meteor.r + 12, t: 0, life: 14, c: '50,25,10' });
     sfx('fire');
   } else if (k === 'tornado') { // 忌邪之眼
     G.tornados.push({ x, y, ang: rand(0, 7), t: 0, life: 5.5, spin: 0, nextAlarm: 0, eye: true });
@@ -1102,25 +1134,14 @@ function useSodom(k, x, y) {
   }
   return true;
 }
-// 天火落點：蜂巢狀排列（間距 < 熔岩有效半徑 × √3），保證整個範圍被熔岩填滿、沒有空隙
-const FIRE_GAP = 42, FIRE_HIT = 30, LAVA_R = 32;
-function firePattern(x, y, R) {
-  const pts = [], rot = rand(0, Math.PI), c = Math.cos(rot), s = Math.sin(rot), rows = Math.ceil(R / (FIRE_GAP * 0.866)) + 1;
-  for (let j = -rows; j <= rows; j++) for (let i = -rows - 1; i <= rows + 1; i++) {
-    let px = (i + (j & 1) * 0.5) * FIRE_GAP, py = j * FIRE_GAP * 0.866;
-    let d = Math.hypot(px, py);
-    if (d > R + FIRE_GAP * 0.5) continue;
-    if (d > R) { px *= R / d; py *= R / d; } // 外圈的點收進邊界，讓邊緣也被填滿
-    pts.push([x + px * c - py * s + rand(-2, 2), y + px * s + py * c + rand(-2, 2)]);
-  }
-  return pts;
-}
+const FIRE_COUNT = 20, FIRE_HIT = 30; // 天火：每次落下幾顆硫磺火球、每顆的燒灼半徑
 function fireImpact(m) {
   const { x, y } = m;
   G.fx.push({ k: 'ring', x, y, r0: 6, r1: 44, t: 0, life: 0.35, c: '255,170,40' });
   for (let i = 0; i < 6; i++) { const a = rand(0, 7), s = rand(50, 160); G.fx.push({ k: 'p', x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r: rand(2, 5), c: pick(['#ff4d00', '#ffa940', '#ffd666', '#fff566']), t: 0, life: rand(0.3, 0.6), drag: 2.5 }); }
-  G.lava.push({ x, y, r: LAVA_R, t: 0, life: 6 });
-  if (G.lava.length > 180) G.lava.shift();
+  G.lava.push({ x, y, r: rand(26, 34), t: 0, life: 6 });
+  if (G.lava.length > 120) G.lava.shift();
+  G.decals.push({ k: 'scorch', x, y, r: 36, t: 0, life: 14, c: '50,25,10' });
   G.shake = Math.max(G.shake, 0.35);
   sfx('fboom');
   const g = m.grp; g.n += killArea(x, y, FIRE_HIT, 'burn', true);
