@@ -255,7 +255,7 @@ const DIS_S = {
   tornado: { name: '忌邪之眼', icon: '👁️', cd: 6,   r: 53, desc: '使人瘋狂' },
   ghost:   { name: '天使救援', icon: '😇', cd: 1.2, r: 60, desc: '接走義人' },
 };
-const isSodom = () => !!G && (G.mode === 'sodom' || G.mode === 'sodompop'); // 所多瑪主題（限時或人口爆炸）
+const isSodom = () => !!G && (G.mode === 'sodom' || G.mode === 'sodompop' || G.mode === 'demo'); // 所多瑪主題（限時、人口爆炸，以及主選單背景）
 const isPop = () => !!G && (G.mode === 'pop' || G.mode === 'sodompop');     // 人口爆炸規則
 const dis = () => isSodom() ? DIS_S : DIS;
 const CAR_POOL = { modern: ['scooter', 'car', 'taxi', 'bus'], sodom: ['donkey', 'cart', 'chariot', 'gold'] };
@@ -1171,7 +1171,7 @@ function spawnRighteous(win, central) {
 function updateSodom(dt) {
   // 義人出現：救援時限一位比一位短（12 秒起，每位少 1.5 秒，最低 5 秒）
   G.nextR -= dt;
-  if (!G.tutorial && G.nextR <= 0 && (G.mode === 'sodompop' || G.t < SODOM_TIME - 5)) {
+  if (!G.tutorial && G.mode !== 'demo' && G.nextR <= 0 && (G.mode === 'sodompop' || G.t < SODOM_TIME - 5)) {
     spawnRighteous(Math.max(5, 12 - G.rCount * 1.5)); G.rCount++; G.nextR = rand(12, 17);
     toast('✨ 義人出現了！快切換「天使救援」！');
   }
@@ -1723,7 +1723,7 @@ function seed(nP, nC) {
 }
 function startGame(mode, noTut) {
   closeTut();
-  chooseWorldSize(); const sodomTheme = mode === 'sodom' || mode === 'sodompop';
+  chooseWorldSize(); const sodomTheme = mode === 'sodom' || mode === 'sodompop' || mode === 'demo';
   genCity(sodomTheme ? 'sodom' : 'modern');
   const prevSel = G && G.sel;
   G = newState(mode); if (prevSel) G.sel = prevSel;
@@ -1795,8 +1795,8 @@ function sodomSteps(pop) {
     { need: 'select', k: 'tornado', hl: 'tornado', text: '第三種天災：<b>👁️ 忌邪之眼</b>。<br>神的視線會在城中游移，罪人無所遁形。', goal: '👇 點選「忌邪之眼」' },
     { need: 'cast', k: 'tornado', hl: 'tornado', delay: 3000, text: '被神看見的罪人會<b>失去理智</b>（頭上出現 @），飛快地衝向身邊還正常的人攻擊，最後自爆。', goal: '👆 點擊城市，降下忌邪之眼' },
     { need: 'next', text: '但是，即使是這樣的罪惡之城，城裡仍有少數心地善良的<b>「義人」</b>。<br>神不願義人和惡人一同滅亡，於是<b>差派天使去拯救他們</b>。' },
-    { need: 'select', k: 'ghost', hl: 'ghost', arrow: true, enter: () => spawnRighteous(20, true), text: '看！那位<b>發著白光</b>的人就是義人，頭上的圈是剩下的時間。<br>義人出現時，「天使救援」按鈕也會發光提醒你。', goal: '👇 點選「天使救援」' },
-    { need: 'rescue', hl: 'ghost', arrow: true, delay: 1900, text: '點擊義人，讓天使把他接走！', goal: '👆 點擊發白光的義人' },
+    { need: 'select', k: 'ghost', hl: 'ghost', arrow: true, skipOn: 'rescue', enter: () => spawnRighteous(20, true), text: '看！那位<b>發著白光</b>的人就是義人，頭上的圈是剩下的時間。<br>義人出現時，「天使救援」按鈕也會發光提醒你。', goal: '👇 點選「天使救援」' },
+    { need: 'rescue', hl: 'ghost', arrow: true, delay: 1900, enter: ensureRighteous, text: '點擊義人，讓天使把他接走！', goal: '👆 點擊發白光的義人' },
     { need: 'next', text: '做得好！救出義人 <b>+300</b>。<br>但要小心：倒數歸零、或是被你的天災波及，都會 <b>-300</b>。義人剛出現時有短暫護盾，而且<b>救援時限會一位比一位短</b>——鹽柱別亂點喔！' },
     { need: 'next', btn: '開始遊戲 ▶', text: pop ? '教學結束！<b>所多瑪・人口爆炸</b>：罪人會越聚越多，城裡超過 <b>150</b> 個人車就輸。撐得越久、分數越高！' : '教學結束！<b>所多瑪・限時</b>：<b>90 秒</b>內拿到最高分，也別忘了拯救義人。審判，開始！' },
   ];
@@ -1824,11 +1824,13 @@ function startTutorial(mode) {
 }
 function nextTut() {
   if (!TUT) return;
-  TUT.i++; TUT.n = 0; TUT.wait = false;
+  TUT.i++; TUT.n = 0; TUT.wait = false; TUT.seq = (TUT.seq || 0) + 1;
   const s = TUT.steps[TUT.i];
   if (!s) return finishTutorial();
   renderTut();
   if (s.enter) s.enter();
+  // 進入「切換天災」步驟時，玩家已經先選好了：稍等一下讓他看到說明，就自動完成
+  if (s.need === 'select' && G.sel === s.k) tutLater(1200, 1);
 }
 function renderTut() {
   const s = TUT.steps[TUT.i];
@@ -1841,21 +1843,30 @@ function renderTut() {
   for (const b of bar.children) b.classList.toggle('tut-hl', !!s.hl && b.dataset.k === s.hl);
   TUT.arrow = !!s.arrow;
 }
+// 等一段時間後往後走 jump 步。每次只有「最新的一個」等待有效（用 seq 編號判斷），避免兩個計時器互相打架
+function tutLater(ms, jump) {
+  TUT.wait = true; const seq = ++TUT.seq;
+  setTimeout(() => { if (TUT && TUT.seq === seq) { TUT.i += jump - 1; nextTut(); } }, ms);
+}
+function ensureRighteous() { // 保險：救援步驟時畫面上一定要有可以救的義人
+  if (!G.people.some(q => q.righteous && !q.dead && !q.gone && q.state !== 'rescue')) spawnRighteous(20, true);
+}
 const tutMatch = (s, type, k) => s && s.need === type && (!s.k || s.k === k);
 function tutEvent(type, k) {
   if (!TUT) return;
+  const s = TUT.steps[TUT.i];
+  // 例：還在「切換天使救援」這步，玩家就已經把義人救走了 → 這步和下一步（救援）都算完成，直接到再下一步
+  if (s && s.skipOn === type) return tutLater(1900, 2);
   if (TUT.wait) { // 還在等上一步的動畫，但玩家已經做了下一步要做的事：直接往下走
     if (tutMatch(TUT.steps[TUT.i + 1], type, k)) { nextTut(); tutEvent(type, k); }
     return;
   }
-  const s = TUT.steps[TUT.i];
   if (!tutMatch(s, type, k)) return;
   TUT.n++; renderTut();
   if (TUT.n >= (s.count || 1)) {
     const d = s.delay != null ? s.delay : (type === 'select' ? 0 : 500);
     if (!d) return nextTut();
-    TUT.wait = true; const i = TUT.i;
-    setTimeout(() => { if (TUT && TUT.i === i) nextTut(); }, d);
+    tutLater(d, 1);
   }
 }
 function closeTut() {
