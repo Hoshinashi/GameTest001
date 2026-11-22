@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>天災降臨</title>
 <style>
 :root{
@@ -10,7 +10,7 @@
   --accent:#ff7a45; --accent2:#ffc53d; --good:#52c41a; --bad:#ff4d4f; --purple:#8e44ad;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
+html,body{touch-action:none;overscroll-behavior:none;-webkit-text-size-adjust:100%;margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink);
   font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
   -webkit-user-select:none;user-select:none}
 #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
@@ -29,6 +29,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 #toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:rgba(36,50,77,.92);color:#fff;
   padding:8px 16px;border-radius:999px;font-weight:700;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
+#app,#hud,#bar,.dis,.hbtn,#tut{touch-action:none}
 #bar{display:flex;gap:8px;padding:8px;background:#24324d;flex:0 0 auto;padding-bottom:max(8px,env(safe-area-inset-bottom))}
 .dis{position:relative;flex:1;border:3px solid transparent;border-radius:14px;background:#33456b;color:#fff;
   padding:6px 4px;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:1px;font-family:inherit}
@@ -42,7 +43,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--
 .overlay{position:fixed;inset:0;background:rgba(20,30,50,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
   display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
 .overlay.hide{display:none}
-.panel{background:var(--panel);border-radius:22px;padding:22px 20px;width:100%;max-width:480px;max-height:94vh;overflow:auto;
+.panel{touch-action:pan-y;background:var(--panel);border-radius:22px;padding:22px 20px;width:100%;max-width:480px;max-height:94vh;overflow:auto;
   box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center}
 h1{margin:0;font-size:40px;letter-spacing:4px;color:var(--accent);text-shadow:3px 3px 0 #ffd666}
 h2{margin:0 0 6px;font-size:28px}
@@ -84,6 +85,8 @@ h2{margin:0 0 6px;font-size:28px}
 .how h3{margin:4px 0 4px;font-size:15px;color:var(--ink)}
 .how .story{background:#fbf3df;border-left:4px solid #d4a017;border-radius:8px;padding:6px 10px;margin:4px 0 6px;color:#6b4a1a}
 .how hr{border:0;border-top:1px dashed #cdd3df;margin:10px 0}
+.reset{margin-top:12px;border:0;background:none;color:#a0a8ba;font-size:13px;text-decoration:underline;cursor:pointer;font-family:inherit;padding:6px 10px;border-radius:8px}
+.reset.armed{background:#fff1f0;color:#cf1322;text-decoration:none;font-weight:800}
 .newrec{color:#d4380d;font-weight:900;animation:pulse .5s infinite alternate;display:inline-block}
 .btns{display:flex;gap:10px;margin-top:12px}
 .btn{flex:1;border:0;border-radius:14px;padding:13px;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit}
@@ -151,6 +154,7 @@ h2{margin:0 0 6px;font-size:28px}
       <b>連殺：</b>一次擊中 3 個以上，每個再加 10 分——大範圍天災才是高分關鍵！<br>
       <span style="opacity:.8">第一次玩會有新手教學（可按 SKIP 跳過）・電腦可用數字鍵 1～4 切換天災</span>
     </div>
+    <button class="reset" id="resetBtn">🗑️ 重置分數紀錄（可重新看新手教學）</button>
   </div>
 </div>
 
@@ -1615,7 +1619,7 @@ function buildBar() { // 依照模式換成對應的天災按鈕
     const d = D[k], b = document.createElement('button');
     b.className = 'dis'; b.dataset.k = k;
     b.innerHTML = '<span class="key">' + (i + 1) + '</span><span class="ico">' + d.icon + '</span><span class="nm">' + d.name + '</span><span class="ds">' + d.desc + '</span><div class="cdv"></div><div class="cdt"></div>';
-    b.addEventListener('click', () => selectDis(k));
+    b.addEventListener('pointerdown', e => { e.preventDefault(); selectDis(k); }); // 手指一碰到就切換，快速連點也不會被當成縮放
     bar.appendChild(b);
   });
 }
@@ -1684,6 +1688,34 @@ function showOnly(id) { for (const o of ['menu', 'pauseMenu', 'over']) $('#' + o
 function refreshBest() {
   document.querySelectorAll('[data-best]').forEach(el => { const k = 'best_' + el.dataset.best, v = store.get(k); el.innerHTML = store.has(k) ? '最高分<br><b style="font-size:16px;display:inline">' + v + '</b>' : ''; });
 }
+/* ---------- 重置分數紀錄：按一次會先詢問，3 秒內再按一次才真的刪除 ---------- */
+let resetTimer = 0;
+$('#resetBtn').addEventListener('click', () => {
+  const btn = $('#resetBtn');
+  if (!btn.classList.contains('armed')) {
+    btn.classList.add('armed'); btn.textContent = '⚠️ 確定要刪除所有最高分紀錄嗎？再按一次確認';
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => { btn.classList.remove('armed'); btn.textContent = '🗑️ 重置分數紀錄（可重新看新手教學）'; }, 3000);
+    return;
+  }
+  clearTimeout(resetTimer);
+  try { Object.keys(localStorage).filter(k => k.startsWith('disaster_best_')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  for (const k in tutSeen) delete tutSeen[k]; // 這次開啟網頁中也能立刻重新看到教學
+  btn.classList.remove('armed'); btn.textContent = '🗑️ 重置分數紀錄（可重新看新手教學）';
+  refreshBest(); toast('✅ 已清除分數紀錄，下次開始遊戲會重新出現新手教學');
+});
+
+/* ---------- 手機：禁止雙指縮放與點兩下放大（iPhone Safari 會忽略網頁的禁止縮放設定，所以要另外攔截） ---------- */
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1 || (e.scale && e.scale !== 1)) e.preventDefault(); }, { passive: false });
+document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+if (window.visualViewport) { // 保險：萬一還是被放大了，自動縮回原本大小
+  const vp = document.querySelector('meta[name="viewport"]'), base = vp.content;
+  visualViewport.addEventListener('resize', () => {
+    if (visualViewport.scale > 1.01) { vp.content = base + ',x=1'; setTimeout(() => { vp.content = base; }, 50); }
+  });
+}
+
 function seed(nP, nC) {
   for (let i = 0; i < nP; i++) G.people.push(newPerson(false));
   for (let i = 0; i < nC; i++) { const c = newCar(true); if (c) G.cars.push(c); }
